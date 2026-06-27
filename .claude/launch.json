@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "novatek-dev",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["dev"],
+      "port": 4321
+    },
+    {
+      "name": "novatek-node",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["./dist/server/entry.mjs"],
+      "port": 3000
+    }
+  ]
+}

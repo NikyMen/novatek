@@ -11,6 +11,12 @@ dist/
 # Vercel
 .vercel/
 
+# Analytics database (SQLite) — vive solo en el VPS
+data/
+*.db
+*.db-shm
+*.db-wal
+
 # Environment variables
 .env
 .env.local

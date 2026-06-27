@@ -1,0 +1,74 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import {
+  checkCredentials, createSessionToken, isAuthenticated,
+  COOKIE_NAME, cookieOptions,
+} from '../../lib/auth';
+
+// Ya logueado → al dashboard
+if (isAuthenticated(Astro.cookies)) {
+  return Astro.redirect('/admin/analytics');
+}
+
+let error = '';
+
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData();
+  const username = String(form.get('username') || '');
+  const password = String(form.get('password') || '');
+
+  if (checkCredentials(username, password)) {
+    Astro.cookies.set(COOKIE_NAME, createSessionToken(username), cookieOptions);
+    return Astro.redirect('/admin/analytics');
+  }
+  error = 'Usuario o contraseña incorrectos.';
+}
+---
+
+<Layout title="Iniciar sesión · Novatek Admin">
+  <main class="grid min-h-screen place-items-center bg-navy-gradient px-4">
+    <div class="field-lines absolute inset-0 opacity-30"></div>
+
+    <div class="relative w-full max-w-md">
+      <div class="mb-8 text-center">
+        <div class="flex items-center justify-center gap-3">
+          <span class="slashes"><span></span><span></span><span></span></span>
+          <span class="text-xs font-bold uppercase tracking-widest2 text-brand-400">Panel privado</span>
+        </div>
+        <h1 class="mt-4 font-display text-4xl text-white tracking-wide">NOVATEK ADMIN</h1>
+        <p class="mt-2 text-sm text-white/45">Ingresá tus credenciales para continuar</p>
+      </div>
+
+      <form method="POST" class="rounded-3xl border border-white/10 bg-navy-800 p-7 sm:p-9 shadow-card">
+        {error && (
+          <div class="mb-5 flex items-center gap-2 rounded-xl border border-red-500/30 bg-red-900/20 px-4 py-3 text-sm text-red-300">
+            <svg class="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>
+            </svg>
+            {error}
+          </div>
+        )}
+
+        <label for="username" class="block text-xs font-bold uppercase tracking-wide text-white/60">Usuario</label>
+        <input id="username" name="username" type="text" required autocomplete="username" autofocus
+          class="mt-2 w-full rounded-xl border border-white/10 bg-navy-900 px-4 py-3 text-white placeholder-white/30 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30"
+          placeholder="admin" />
+
+        <label for="password" class="mt-5 block text-xs font-bold uppercase tracking-wide text-white/60">Contraseña</label>
+        <input id="password" name="password" type="password" required autocomplete="current-password"
+          class="mt-2 w-full rounded-xl border border-white/10 bg-navy-900 px-4 py-3 text-white placeholder-white/30 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30"
+          placeholder="••••••••" />
+
+        <button type="submit"
+          class="mt-7 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-orange-gradient px-7 py-4 font-bold text-white shadow-glow transition-transform hover:scale-[1.02]">
+          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Iniciar sesión
+        </button>
+      </form>
+
+      <a href="/" class="mt-6 block text-center text-xs text-white/35 transition hover:text-white/60">← Volver al sitio</a>
+    </div>
+  </main>
+</Layout>

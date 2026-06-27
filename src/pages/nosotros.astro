@@ -1,20 +1,135 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import { Header } from '../components/Header';
+export const prerender = true;
+import SiteLayout from '../layouts/SiteLayout.astro';
+
+const WA = 'https://wa.link/fo0jrt';
+
+const diferenciales = [
+  { t: 'Stock real y disponibilidad inmediata', d: 'Evitá esperas y retrasos en obra. Lo que ves, está.', icon: 'box' },
+  { t: 'Procesos comerciales simples y rápidos', d: 'Cotizaciones ágiles y compra sin vueltas.', icon: 'bolt' },
+  { t: 'Asesoramiento técnico especializado', d: 'Un equipo que conoce cada sistema y cada pieza.', icon: 'headset' },
+  { t: 'Catálogo amplio para aluminio', d: 'Soluciones nacionales e importadas en un solo lugar.', icon: 'grid' },
+  { t: 'Soporte para instalación y postventa', d: 'Te acompañamos antes, durante y después.', icon: 'shield' },
+  { t: 'Marcas seleccionadas', d: 'Trabajamos solo con líderes internacionales.', icon: 'star' },
+];
+
+const icons = {
+  box: 'M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16zM3.27 6.96L12 12.01l8.73-5.05M12 22.08V12',
+  bolt: 'M13 2L3 14h9l-1 8 10-12h-9l1-8z',
+  headset: 'M3 18v-6a9 9 0 0118 0v6M21 19a2 2 0 01-2 2h-1a2 2 0 01-2-2v-3a2 2 0 012-2h3zM3 19a2 2 0 002 2h1a2 2 0 002-2v-3a2 2 0 00-2-2H3z',
+  grid: 'M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z',
+  shield: 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z',
+  star: 'M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14l-5-4.87 6.91-1.01L12 2z',
+};
 ---
 
-<Layout title="Nosotros" description="Información sobre Novatek">
-  <Header client:load />
-  <section class="bg-white">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
-      <div>
-        <img src="/imgnosotros.png" alt="Sobre Nosotros" class="w-full rounded-2xl shadow-md" />
-      </div>
-      <div>
-        <h1 class="text-3xl md:text-4xl font-extrabold mb-4">Sobre Nosotros</h1>
-        <p class="text-gray-800 mb-4">En NOVATEK ofrecemos soluciones integrales en herrajes y accesorios para carpinterías de aluminio y PVC.</p>
-        <p class="text-gray-800 mb-6">Trabajamos con marcas de alta calidad, stock real y procesos ágiles para acompañar cada proyecto.</p>
+<SiteLayout title="Nosotros · Novatek Argentina" description="En Novatek ofrecemos soluciones integrales en herrajes y accesorios para carpintería de aluminio.">
+  <!-- Hero -->
+  <section class="relative overflow-hidden bg-navy-gradient pt-32 md:pt-40 pb-20">
+    <div class="bg-pitch-glow absolute inset-0"></div>
+    <div class="field-lines absolute inset-0 opacity-40"></div>
+    <div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div class="grid lg:grid-cols-2 gap-12 items-center">
+        <div data-reveal>
+          <div class="flex items-center gap-3">
+            <span class="slashes"><span></span><span></span><span></span></span>
+            <span class="text-xs font-bold uppercase tracking-widest2 text-brand-400">Sobre nosotros</span>
+          </div>
+          <h1 class="mt-5 font-display text-5xl md:text-6xl leading-[0.92] text-white">
+            ¿QUIÉN DIRIGE<br/><span class="text-brand-500">TU PROYECTO?</span>
+          </h1>
+          <p class="mt-6 max-w-xl text-white/70 leading-relaxed">
+            En <span class="font-semibold text-white">NOVATEK</span> ofrecemos soluciones integrales en herrajes
+            y accesorios para carpinterías de aluminio. Trabajamos con marcas de alta calidad, stock real y
+            procesos ágiles para acompañar cada proyecto.
+          </p>
+          <a href={WA} target="_blank" rel="noopener noreferrer" class="mt-8 inline-flex items-center gap-2 rounded-full bg-orange-gradient px-7 py-4 font-bold text-white shadow-glow transition-transform hover:scale-105">
+            Contactanos
+          </a>
+        </div>
+        <div class="relative" data-reveal style="--reveal-delay:120ms">
+          <div class="absolute -inset-3 -z-10 rounded-[2rem] bg-gradient-to-tr from-celeste/15 to-brand-500/15 blur-xl"></div>
+          <img src="/mundial/dirige-bandera.jpeg" alt="¿Quién dirige tu proyecto? — Novatek" class="w-full rounded-[2rem] border border-white/10 shadow-card" />
+        </div>
       </div>
     </div>
   </section>
-</Layout>
+
+  <!-- Quiénes somos (foto arquitectura) -->
+  <section class="py-20 md:py-24">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div class="grid lg:grid-cols-2 gap-12 items-center">
+        <div class="relative order-2 lg:order-1" data-reveal>
+          <img src="/img/nosotros-quienes-somos.png" alt="Soluciones en aluminio Novatek" class="w-full rounded-[2rem] border border-white/10 shadow-card" loading="lazy" />
+        </div>
+        <div class="order-1 lg:order-2" data-reveal style="--reveal-delay:120ms">
+          <h2 class="font-display text-4xl md:text-5xl text-white">PIEZAS CLAVES PARA <span class="text-brand-500">GRANDES PROYECTOS</span></h2>
+          <p class="mt-6 text-white/70 leading-relaxed">
+            Cada obra es un partido distinto. Por eso ponemos en cancha un catálogo amplio, marcas líderes
+            y un equipo técnico que entiende lo que tu proyecto necesita para ganar.
+          </p>
+          <div class="mt-8 grid grid-cols-3 gap-4">
+            {[['+5', 'Marcas líderes'], ['100%', 'Stock real'], ['24/7', 'Asesoramiento']].map(([n, l]) => (
+              <div class="rounded-2xl border border-white/10 bg-navy-800 p-4 text-center">
+                <div class="font-display text-3xl text-brand-500">{n}</div>
+                <div class="mt-1 text-xs text-white/60">{l}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Qué nos diferencia -->
+  <section class="py-20 md:py-24 bg-navy-800 border-y border-white/10">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div class="text-center" data-reveal>
+        <div class="flex items-center justify-center gap-3">
+          <span class="slashes"><span></span><span></span><span></span></span>
+          <span class="text-xs font-bold uppercase tracking-widest2 text-brand-400">Nuestro juego</span>
+        </div>
+        <h2 class="mt-5 font-display text-4xl md:text-5xl text-white">¿QUÉ NOS DIFERENCIA?</h2>
+      </div>
+      <div class="mt-14 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {diferenciales.map((f, i) => (
+          <div class="group rounded-3xl border border-white/10 bg-navy-900 p-7 transition-colors hover:border-brand-500/50" data-reveal style={`--reveal-delay:${(i % 3) * 90}ms`}>
+            <div class="grid h-14 w-14 place-items-center rounded-2xl bg-brand-500/15 text-brand-400 ring-1 ring-brand-500/30 transition-colors group-hover:bg-brand-500 group-hover:text-white">
+              <svg class="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d={icons[f.icon]} stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <h3 class="mt-5 text-lg font-bold text-white">{f.t}</h3>
+            <p class="mt-2 text-sm text-white/60">{f.d}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Galería diferenciales -->
+  <section class="py-20 md:py-24">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-6" data-reveal>
+        {['/img/nosotros-diferencia-1.png', '/img/nosotros-diferencia-2.png', '/img/nosotros-diferencia-3.png', '/img/home-nosotros-icono.png'].map((g) => (
+          <figure class="overflow-hidden rounded-2xl border border-white/10 shadow-card">
+            <img src={g} alt="Novatek en obra" class="aspect-[4/5] w-full object-cover transition-transform duration-500 hover:scale-105" loading="lazy" />
+          </figure>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="pb-20">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div class="relative overflow-hidden rounded-3xl border border-white/10 bg-navy-800 px-8 py-14 text-center shadow-card" data-reveal>
+        <div class="bg-pitch-glow absolute inset-0"></div>
+        <h2 class="relative font-display text-3xl md:text-5xl text-white">JUGÁ CON UN EQUIPO GANADOR</h2>
+        <p class="relative mx-auto mt-4 max-w-xl text-white/70">Conectate con nuestro equipo y obtené asesoramiento técnico personalizado.</p>
+        <a href={WA} target="_blank" rel="noopener noreferrer" class="relative mt-8 inline-flex items-center gap-2 rounded-full bg-orange-gradient px-8 py-4 font-bold text-white shadow-glow transition-transform hover:scale-105">
+          Contactanos
+          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+      </div>
+    </div>
+  </section>
+</SiteLayout>

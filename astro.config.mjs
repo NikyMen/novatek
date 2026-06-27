@@ -1,15 +1,15 @@
 import { defineConfig } from 'astro/config';
 import react from '@astrojs/react';
 import tailwind from '@astrojs/tailwind';
-import vercel from '@astrojs/vercel/serverless';
+import node from '@astrojs/node';
 
 export default defineConfig({
   integrations: [react(), tailwind()],
   output: 'server',
-  adapter: vercel({
-    runtime: 'nodejs20.x'
+  adapter: node({
+    mode: 'standalone',
   }),
   devToolbar: {
-    enabled: false
-  }
+    enabled: false,
+  },
 });

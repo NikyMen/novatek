@@ -1,0 +1,178 @@
+---
+export const prerender = true;
+import SiteLayout from '../layouts/SiteLayout.astro';
+
+const WA = 'https://wa.link/fo0jrt';
+
+// 🎯 Fecha objetivo del lanzamiento (editable). Genera el countdown de expectativa.
+const TARGET = '2026-07-31T12:00:00-03:00';
+
+const teasers = [
+  { img: '/novedades-teaser/algo-grande.jpeg', t: 'Algo grande está por llegar', d: 'Una alianza que va a marcar un antes y un después.' },
+  { img: '/novedades-teaser/espera-vale.jpeg', t: 'La espera vale la pena', d: 'Hay marcas que nacen líderes. Y líderes que eligen crecer aún más.' },
+  { img: '/novedades-teaser/calidad-evoluciona.jpeg', t: 'La calidad evoluciona', d: 'Se viene algo que marca la diferencia.' },
+  { img: '/novedades-teaser/incorporacion.jpeg', t: 'Más que una incorporación', d: 'Sumamos experiencia, innovación y confianza.' },
+];
+
+const pilares = [
+  { t: 'Más tecnología', d: 'Innovación y diseño para soluciones cada vez mejores.', icon: 'M12 2a7 7 0 00-4 12.74V17a2 2 0 002 2h4a2 2 0 002-2v-2.26A7 7 0 0012 2zM9 21h6' },
+  { t: 'Más respaldo', d: 'El soporte de un grupo líder a nivel mundial.', icon: 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z' },
+  { t: 'Más oportunidades', d: 'Nuevas posibilidades para impulsar tus proyectos.', icon: 'M3 3v18h18M7 14l4-4 4 4 5-6' },
+];
+---
+
+<SiteLayout title="Novedades · Algo grande está por llegar — Novatek" description="Se viene una incorporación que va a impulsar tus proyectos. Más tecnología, más respaldo y más oportunidades. Muy pronto te contamos más.">
+  <!-- HERO TEASER -->
+  <section class="relative isolate overflow-hidden bg-navy-gradient pt-32 md:pt-40 pb-20 md:pb-28">
+    <div class="bg-pitch-glow absolute inset-0 -z-10"></div>
+    <div class="field-lines absolute inset-0 -z-10 opacity-40"></div>
+    <!-- signos de pregunta flotantes -->
+    <div class="pointer-events-none absolute inset-0 -z-10 select-none font-display text-white/[0.04]">
+      <span class="absolute left-[8%] top-[20%] text-[120px] animate-floaty">?</span>
+      <span class="absolute right-[12%] top-[30%] text-[180px] animate-floaty" style="animation-delay:-2s">?</span>
+      <span class="absolute left-[20%] bottom-[12%] text-[90px] animate-floaty" style="animation-delay:-4s">?</span>
+    </div>
+
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div class="grid lg:grid-cols-2 gap-12 items-center">
+        <div data-reveal>
+          <span class="inline-flex items-center gap-2 rounded-full bg-brand-500/15 px-4 py-1.5 text-xs font-bold uppercase tracking-widest2 text-brand-300 ring-1 ring-brand-500/30">
+            <span class="relative flex h-2 w-2">
+              <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand-400 opacity-75"></span>
+              <span class="relative inline-flex h-2 w-2 rounded-full bg-brand-500"></span>
+            </span>
+            Próximamente · Edición Mundial 2026
+          </span>
+
+          <h1 class="mt-6 font-display text-5xl sm:text-6xl xl:text-7xl leading-[0.9] text-white">
+            ALGO GRANDE<br/><span class="text-brand-500">ESTÁ POR LLEGAR</span>
+          </h1>
+          <p class="mt-6 max-w-xl text-lg text-white/70 leading-relaxed">
+            Estamos trabajando en una alianza que va a marcar un
+            <span class="font-semibold text-white">antes y un después</span>.
+            Más tecnología, más respaldo y más oportunidades para tus proyectos.
+          </p>
+
+          <!-- COUNTDOWN -->
+          <div id="countdown" class="mt-9 grid grid-cols-4 gap-3 max-w-md">
+            {['Días', 'Horas', 'Min', 'Seg'].map((l, i) => (
+              <div class="rounded-2xl border border-white/10 bg-navy-800/80 p-3 text-center backdrop-blur">
+                <div class="cd-num font-display text-3xl md:text-4xl text-white tabular-nums" data-unit={i}>--</div>
+                <div class="mt-1 text-[10px] font-bold uppercase tracking-widest2 text-brand-400">{l}</div>
+              </div>
+            ))}
+          </div>
+
+          <div class="mt-9 flex flex-wrap gap-4">
+            <a href={WA} target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 rounded-full bg-orange-gradient px-7 py-4 font-bold text-white shadow-glow transition-transform hover:scale-105">
+              Quiero enterarme primero
+              <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </a>
+            <a href="#teasers" class="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-7 py-4 font-bold text-white backdrop-blur transition-colors hover:bg-white/10">
+              Ver pistas
+            </a>
+          </div>
+        </div>
+
+        <!-- Caja misteriosa -->
+        <div class="relative" data-reveal style="--reveal-delay:150ms">
+          <div class="absolute inset-0 -z-10 scale-90 rounded-full bg-brand-500/25 blur-3xl"></div>
+          <div class="relative overflow-hidden rounded-[2rem] border border-white/10 shadow-card">
+            <img src="/novedades-teaser/incorporacion.jpeg" alt="Más que una incorporación — Novatek" class="w-full" />
+          </div>
+          <div class="absolute -bottom-5 left-1/2 -translate-x-1/2 flex items-center gap-2 rounded-full border border-white/10 bg-navy-900/90 px-5 py-2.5 shadow-card backdrop-blur">
+            <span class="text-brand-500 text-xl">⏳</span>
+            <span class="text-sm font-bold text-white">Falta poco…</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PILARES -->
+  <section class="py-20 md:py-24 bg-navy-800 border-y border-white/10">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div class="text-center" data-reveal>
+        <div class="flex items-center justify-center gap-3">
+          <span class="slashes"><span></span><span></span><span></span></span>
+          <span class="text-xs font-bold uppercase tracking-widest2 text-brand-400">Qué se viene</span>
+        </div>
+        <h2 class="mt-5 font-display text-4xl md:text-5xl text-white">LA CALIDAD <span class="text-brand-500">EVOLUCIONA</span></h2>
+        <p class="mx-auto mt-4 max-w-2xl text-white/65">Hay marcas que nacen líderes. Y hay líderes que eligen crecer aún más.</p>
+      </div>
+      <div class="mt-14 grid sm:grid-cols-3 gap-6">
+        {pilares.map((p, i) => (
+          <div class="group rounded-3xl border border-white/10 bg-navy-900 p-8 text-center transition-colors hover:border-brand-500/50" data-reveal style={`--reveal-delay:${i * 100}ms`}>
+            <div class="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-brand-500/15 text-brand-400 ring-1 ring-brand-500/30 transition-colors group-hover:bg-brand-500 group-hover:text-white">
+              <svg class="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d={p.icon} stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <h3 class="mt-5 font-display text-xl tracking-wide text-white">{p.t.toUpperCase()}</h3>
+            <p class="mt-2 text-sm text-white/60">{p.d}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- TEASERS GALLERY -->
+  <section id="teasers" class="py-20 md:py-28 scroll-mt-24">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div class="mx-auto max-w-2xl text-center" data-reveal>
+        <h2 class="font-display text-4xl md:text-5xl text-white">LAS PISTAS</h2>
+        <p class="mt-4 text-white/65">Seguí la campaña pieza por pieza. Cada placa revela un poco más.</p>
+      </div>
+      <div class="mt-14 grid sm:grid-cols-2 gap-6">
+        {teasers.map((t, i) => (
+          <figure class="group relative overflow-hidden rounded-3xl border border-white/10 shadow-card" data-reveal style={`--reveal-delay:${(i % 2) * 100}ms`}>
+            <img src={t.img} alt={t.t} class="w-full transition-transform duration-500 group-hover:scale-[1.03]" loading="lazy" />
+            <figcaption class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-navy-950 via-navy-950/60 to-transparent p-6 pt-16">
+              <div class="font-display text-2xl tracking-wide text-white">{t.t}</div>
+              <div class="mt-1 text-sm text-white/70">{t.d}</div>
+            </figcaption>
+          </figure>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA FINAL -->
+  <section class="pb-24">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div class="relative overflow-hidden rounded-[2.5rem] bg-orange-gradient px-8 py-16 text-center shadow-glow" data-reveal>
+        <div class="field-lines absolute inset-0 opacity-30"></div>
+        <h2 class="relative font-display text-4xl md:text-6xl leading-[0.95] text-white">MUY PRONTO<br/>TE CONTAMOS MÁS</h2>
+        <p class="relative mx-auto mt-4 max-w-xl text-white/90">Dejanos tu mensaje y sé de los primeros en enterarte de la gran novedad.</p>
+        <a href={WA} target="_blank" rel="noopener noreferrer" class="relative mt-8 inline-flex items-center gap-2 rounded-full bg-navy-900 px-8 py-4 font-bold text-white transition-transform hover:scale-105">
+          Avisame cuando llegue
+          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <script is:inline define:vars={{ TARGET }}>
+    (function () {
+      const target = new Date(TARGET).getTime();
+      const nums = document.querySelectorAll('#countdown .cd-num');
+      function pad(n) { return String(n).padStart(2, '0'); }
+      function tick() {
+        const diff = target - Date.now();
+        if (diff <= 0) {
+          nums.forEach((n) => (n.textContent = '00'));
+          const cd = document.getElementById('countdown');
+          if (cd) cd.innerHTML = '<div class="col-span-4 rounded-2xl border border-brand-500/40 bg-brand-500/10 p-5 text-center font-display text-2xl text-brand-400">¡YA LLEGÓ! 🎉</div>';
+          clearInterval(timer);
+          return;
+        }
+        const d = Math.floor(diff / 86400000);
+        const h = Math.floor((diff % 86400000) / 3600000);
+        const m = Math.floor((diff % 3600000) / 60000);
+        const s = Math.floor((diff % 60000) / 1000);
+        const vals = [d, pad(h), pad(m), pad(s)];
+        nums.forEach((n) => { n.textContent = vals[Number(n.dataset.unit)]; });
+      }
+      tick();
+      const timer = setInterval(tick, 1000);
+    })();
+  </script>
+</SiteLayout>

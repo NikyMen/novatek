@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Package, BarChart3, Users, Settings, LogOut, Tag } from 'lucide-react';
+import { Plus, Package, LogOut, Tag, TrendingUp } from 'lucide-react';
 import { ProductForm } from './ProductForm';
 import { ProductList } from './ProductList';
 import { CategoryForm } from './CategoryForm';
@@ -299,6 +299,13 @@ export const AdminPanel: React.FC = () => {
                   <span>Nueva Categoría</span>
                 </button>
               )}
+              <a
+                href="/admin/analytics"
+                className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 flex items-center space-x-2"
+              >
+                <TrendingUp size={20} />
+                <span>Analíticas</span>
+              </a>
               <button
                 onClick={handleLogout}
                 className="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 flex items-center space-x-2"

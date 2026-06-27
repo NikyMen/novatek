@@ -1,37 +1,137 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import { Header } from '../components/Header';
-import { MessageCircle, Phone, Mail, MapPin } from 'lucide-react';
+export const prerender = true;
+import SiteLayout from '../layouts/SiteLayout.astro';
+
+const WA = 'https://wa.link/fo0jrt';
+const WA_PHONE = '541179402001';
+const EMAIL = 'administracion@novatekargentina.com.ar';
+const PHONE = '+54 11 7940 2001';
 ---
 
-<Layout title="Contacto" description="Contacta a Novatek">
-  <Header client:load />
-  <section class="bg-white">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid grid-cols-1 md:grid-cols-3 gap-8">
-      <div class="md:col-span-2 bg-gray-50 p-6 rounded-xl shadow">
-        <h1 class="text-3xl font-extrabold mb-4">Contacto</h1>
-        <form class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Nombre</label>
-            <input type="text" class="mt-1 w-full border rounded-md p-2" placeholder="Tu nombre" />
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Email</label>
-            <input type="email" class="mt-1 w-full border rounded-md p-2" placeholder="tu@correo.com" />
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Mensaje</label>
-            <textarea class="mt-1 w-full border rounded-md p-2 h-32" placeholder="Escribe tu consulta"></textarea>
-          </div>
-          <button type="button" class="bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 rounded-md font-semibold">Enviar</button>
-        </form>
+<SiteLayout title="Contacto · Novatek Argentina" description="Conectate con el equipo de Novatek y obtené asesoramiento técnico personalizado para tu proyecto.">
+  <!-- Hero -->
+  <section class="relative overflow-hidden bg-navy-gradient pt-32 md:pt-40 pb-16">
+    <div class="bg-pitch-glow absolute inset-0"></div>
+    <div class="field-lines absolute inset-0 opacity-40"></div>
+    <div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center" data-reveal>
+      <div class="flex items-center justify-center gap-3">
+        <span class="slashes"><span></span><span></span><span></span></span>
+        <span class="text-xs font-bold uppercase tracking-widest2 text-brand-400">Contacto</span>
       </div>
-      <div class="bg-white p-6 rounded-xl shadow space-y-4">
-        <div class="flex items-center gap-3"><MapPin class="text-[#0d2742]" /><span>Provincia de Buenos Aires</span></div>
-        <div class="flex items-center gap-3"><Phone class="text-[#0d2742]" /><span>3794-000000</span></div>
-        <div class="flex items-center gap-3"><Mail class="text-[#0d2742]" /><a href="mailto:administracion@novatekargentina.com.ar" class="hover:underline">administracion@novatekargentina.com.ar</a></div>
-        <div class="flex items-center gap-3"><MessageCircle class="text-[#0d2742]" /><a href={`https://wa.me/${import.meta.env.WHATSAPP_NUMBER ?? '5490000000000'}`} target="_blank" rel="noopener noreferrer" class="text-orange-600 hover:underline">WhatsApp</a></div>
+      <h1 class="mt-5 font-display text-5xl md:text-6xl text-white">HABLEMOS DE TU PROYECTO</h1>
+      <p class="mx-auto mt-4 max-w-2xl text-white/65">
+        Conectate con nuestro equipo y obtené asesoramiento técnico personalizado. Te respondemos rápido.
+      </p>
+    </div>
+  </section>
+
+  <section class="py-16 md:py-20">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div class="grid lg:grid-cols-5 gap-8">
+        <!-- Formulario -->
+        <div class="lg:col-span-3 rounded-3xl border border-white/10 bg-navy-800 p-7 sm:p-10 shadow-card" data-reveal>
+          <h2 class="font-display text-2xl md:text-3xl text-white">ARMÁ TU CONSULTA</h2>
+          <p class="mt-2 text-sm text-white/55">Completá el formulario y seguimos la charla por WhatsApp.</p>
+
+          <form id="contact-form" class="mt-7 space-y-5">
+            <div class="grid sm:grid-cols-2 gap-5">
+              <div>
+                <label for="nombre" class="block text-xs font-bold uppercase tracking-wide text-white/60">Nombre</label>
+                <input id="nombre" name="nombre" type="text" required placeholder="Tu nombre"
+                  class="mt-2 w-full rounded-xl border border-white/10 bg-navy-900 px-4 py-3 text-white placeholder-white/30 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30" />
+              </div>
+              <div>
+                <label for="telefono" class="block text-xs font-bold uppercase tracking-wide text-white/60">Teléfono</label>
+                <input id="telefono" name="telefono" type="tel" placeholder="Tu teléfono"
+                  class="mt-2 w-full rounded-xl border border-white/10 bg-navy-900 px-4 py-3 text-white placeholder-white/30 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30" />
+              </div>
+            </div>
+            <div>
+              <label for="email" class="block text-xs font-bold uppercase tracking-wide text-white/60">Email</label>
+              <input id="email" name="email" type="email" placeholder="tu@correo.com"
+                class="mt-2 w-full rounded-xl border border-white/10 bg-navy-900 px-4 py-3 text-white placeholder-white/30 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30" />
+            </div>
+            <div>
+              <label for="mensaje" class="block text-xs font-bold uppercase tracking-wide text-white/60">Mensaje</label>
+              <textarea id="mensaje" name="mensaje" rows="5" required placeholder="Contanos qué necesitás para tu proyecto…"
+                class="mt-2 w-full rounded-xl border border-white/10 bg-navy-900 px-4 py-3 text-white placeholder-white/30 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30"></textarea>
+            </div>
+            <button type="submit" class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-orange-gradient px-7 py-4 font-bold text-white shadow-glow transition-transform hover:scale-[1.02] sm:w-auto">
+              <svg class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163a11.867 11.867 0 01-1.587-5.945C.16 5.335 5.495 0 12.05 0a11.817 11.817 0 018.413 3.488 11.824 11.824 0 013.48 8.414c-.003 6.557-5.338 11.892-11.893 11.892a11.9 11.9 0 01-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884a9.86 9.86 0 001.59 5.39l-.999 3.648 3.908-1.025z"/></svg>
+              Enviar por WhatsApp
+            </button>
+          </form>
+        </div>
+
+        <!-- Info -->
+        <div class="lg:col-span-2 space-y-5">
+          <div class="rounded-3xl border border-white/10 bg-navy-800 p-7 shadow-card" data-reveal>
+            <h3 class="font-display text-xl text-white">DATOS DE CONTACTO</h3>
+            <ul class="mt-5 space-y-5 text-sm">
+              <li class="flex items-start gap-4">
+                <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand-500/15 text-brand-400 ring-1 ring-brand-500/30">
+                  <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 1118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                </span>
+                <div><div class="font-bold text-white">Ubicación</div><div class="text-white/60">Provincia de Buenos Aires, Argentina</div></div>
+              </li>
+              <li class="flex items-start gap-4">
+                <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand-500/15 text-brand-400 ring-1 ring-brand-500/30">
+                  <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.13.96.36 1.9.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0122 16.92z"/></svg>
+                </span>
+                <div><div class="font-bold text-white">Teléfono</div><a href="tel:+541179402001" class="text-white/60 hover:text-brand-400 transition">{PHONE}</a></div>
+              </li>
+              <li class="flex items-start gap-4">
+                <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand-500/15 text-brand-400 ring-1 ring-brand-500/30">
+                  <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg>
+                </span>
+                <div><div class="font-bold text-white">Email</div><a href={`mailto:${EMAIL}`} class="break-all text-white/60 hover:text-brand-400 transition">{EMAIL}</a></div>
+              </li>
+              <li class="flex items-start gap-4">
+                <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand-500/15 text-brand-400 ring-1 ring-brand-500/30">
+                  <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                </span>
+                <div><div class="font-bold text-white">Horario</div><div class="text-white/60">Lunes a Viernes · 08:00 a 17:00 h</div></div>
+              </li>
+            </ul>
+          </div>
+
+          <a href={WA} target="_blank" rel="noopener noreferrer" class="group block overflow-hidden rounded-3xl border border-brand-500/30 bg-orange-gradient p-7 shadow-glow transition-transform hover:scale-[1.01]" data-reveal>
+            <div class="flex items-center gap-4">
+              <span class="grid h-12 w-12 place-items-center rounded-2xl bg-white/15 text-white">
+                <svg class="h-6 w-6" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163a11.867 11.867 0 01-1.587-5.945C.16 5.335 5.495 0 12.05 0a11.817 11.817 0 018.413 3.488 11.824 11.824 0 013.48 8.414c-.003 6.557-5.338 11.892-11.893 11.892a11.9 11.9 0 01-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884a9.86 9.86 0 001.59 5.39l-.999 3.648 3.908-1.025z"/></svg>
+              </span>
+              <div>
+                <div class="font-display text-xl text-white">WHATSAPP DIRECTO</div>
+                <div class="text-sm text-white/85">Respuesta inmediata en horario comercial</div>
+              </div>
+            </div>
+          </a>
+        </div>
       </div>
     </div>
   </section>
-</Layout>
+
+  <!-- Banner horario / datos -->
+  <section class="pb-20">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <figure class="overflow-hidden rounded-3xl border border-white/10 shadow-card" data-reveal>
+        <img src="/img/cta-footer.png" alt="Novatek — Lunes a Viernes 08:00 a 17:00 h · Provincia de Buenos Aires" class="w-full" loading="lazy" />
+      </figure>
+    </div>
+  </section>
+
+  <script is:inline define:vars={{ WA_PHONE }}>
+    const form = document.getElementById('contact-form');
+    form?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const f = new FormData(form);
+      const txt =
+        `¡Hola Novatek! Quiero hacer una consulta.%0A%0A` +
+        `*Nombre:* ${encodeURIComponent(f.get('nombre') || '')}%0A` +
+        `*Teléfono:* ${encodeURIComponent(f.get('telefono') || '')}%0A` +
+        `*Email:* ${encodeURIComponent(f.get('email') || '')}%0A` +
+        `*Mensaje:* ${encodeURIComponent(f.get('mensaje') || '')}`;
+      window.open(`https://wa.me/${WA_PHONE}?text=${txt}`, '_blank');
+    });
+  </script>
+</SiteLayout>

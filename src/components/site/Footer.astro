@@ -1,0 +1,96 @@
+---
+import BrandMark from './BrandMark.astro';
+
+const WA = 'https://wa.link/fo0jrt';
+const EMAIL = 'administracion@novatekargentina.com.ar';
+const PHONE = '+54 11 7940 2001';
+---
+
+<footer class="relative overflow-hidden bg-navy-950 border-t border-white/10">
+  <div class="field-lines pointer-events-none absolute inset-0 opacity-60"></div>
+
+  <!-- CTA strip -->
+  <div class="relative border-b border-white/10 bg-gradient-to-r from-brand-600 via-brand-500 to-brand-600">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-7 flex flex-col md:flex-row items-center justify-between gap-5 text-center md:text-left">
+      <p class="font-display text-2xl md:text-3xl tracking-wide text-white">
+        CONECTATE CON NUESTRO EQUIPO Y JUGÁ EN PRIMERA
+      </p>
+      <a
+        href={WA}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="shrink-0 inline-flex items-center gap-2 rounded-full bg-navy-900 px-7 py-3.5 font-bold text-white shadow-lg transition-transform hover:scale-105"
+      >
+        Asesoramiento técnico
+        <span aria-hidden="true">→</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-14">
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-10">
+      <!-- Brand -->
+      <div class="md:col-span-5">
+        <div class="flex items-center gap-3 text-white">
+          <BrandMark class="h-11 w-11" />
+          <div class="leading-none">
+            <div class="font-display text-2xl tracking-wide">NOVATEK</div>
+            <div class="text-[10px] uppercase tracking-widest2 text-brand-400 font-semibold">
+              Piezas claves para grandes proyectos
+            </div>
+          </div>
+        </div>
+        <p class="mt-5 max-w-sm text-sm leading-relaxed text-white/60">
+          Soluciones integrales en herrajes y accesorios para carpintería de aluminio.
+          Marcas líderes, stock real y procesos ágiles para acompañar cada proyecto.
+        </p>
+        <div class="mt-6 flex items-center gap-3">
+          <a href={WA} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp"
+            class="grid h-10 w-10 place-items-center rounded-xl bg-white/5 ring-1 ring-white/10 text-white/80 hover:text-brand-400 hover:ring-brand-500/50 transition">
+            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163a11.867 11.867 0 01-1.587-5.945C.16 5.335 5.495 0 12.05 0a11.817 11.817 0 018.413 3.488 11.824 11.824 0 013.48 8.414c-.003 6.557-5.338 11.892-11.893 11.892a11.9 11.9 0 01-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884a9.86 9.86 0 001.59 5.39l-.999 3.648 3.908-1.025zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.078 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Nav -->
+      <div class="md:col-span-3">
+        <h4 class="text-xs uppercase tracking-widest2 font-bold text-brand-400">Navegación</h4>
+        <ul class="mt-4 space-y-2.5 text-sm">
+          <li><a href="/" class="text-white/70 hover:text-white transition">Inicio</a></li>
+          <li><a href="/catalogo" class="text-white/70 hover:text-white transition">Catálogo</a></li>
+          <li><a href="/nosotros" class="text-white/70 hover:text-white transition">Nosotros</a></li>
+          <li><a href="/novedades" class="text-white/70 hover:text-white transition">Novedades</a></li>
+          <li><a href="/contacto" class="text-white/70 hover:text-white transition">Contacto</a></li>
+        </ul>
+      </div>
+
+      <!-- Contacto -->
+      <div class="md:col-span-4">
+        <h4 class="text-xs uppercase tracking-widest2 font-bold text-brand-400">Contacto</h4>
+        <ul class="mt-4 space-y-3.5 text-sm">
+          <li class="flex items-start gap-3">
+            <svg class="mt-0.5 h-4 w-4 shrink-0 text-brand-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 1118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <span class="text-white/70">Provincia de Buenos Aires, Argentina</span>
+          </li>
+          <li class="flex items-start gap-3">
+            <svg class="mt-0.5 h-4 w-4 shrink-0 text-brand-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.13.96.36 1.9.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0122 16.92z"/></svg>
+            <a href="tel:+541179402001" class="text-white/70 hover:text-white transition">{PHONE}</a>
+          </li>
+          <li class="flex items-start gap-3">
+            <svg class="mt-0.5 h-4 w-4 shrink-0 text-brand-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg>
+            <a href={`mailto:${EMAIL}`} class="text-white/70 hover:text-white transition break-all">{EMAIL}</a>
+          </li>
+          <li class="flex items-start gap-3">
+            <svg class="mt-0.5 h-4 w-4 shrink-0 text-brand-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            <span class="text-white/70">Lunes a Viernes · 08:00 a 17:00 h</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="mt-12 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-white/10 pt-6">
+      <p class="text-xs text-white/40">© {new Date().getFullYear()} Novatek Argentina. Todos los derechos reservados.</p>
+      <p class="text-xs text-white/40">Accesorios y herrajes para aluminio · Hecho en Argentina 🇦🇷</p>
+    </div>
+  </div>
+</footer>

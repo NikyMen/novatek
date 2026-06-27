@@ -1,0 +1,454 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { isAuthenticated } from '../../lib/auth';
+
+// Protección: sin sesión válida → al login
+if (!isAuthenticated(Astro.cookies)) {
+  return Astro.redirect('/admin/login');
+}
+
+const PAGE_NAMES: Record<string, string> = {
+  '/': 'Inicio',
+  '/catalogo': 'Catálogo',
+  '/nosotros': 'Nosotros',
+  '/contacto': 'Contacto',
+  '/novedades': 'Novedades',
+};
+
+const fmtPage = (p: string) => PAGE_NAMES[p] || p;
+
+const fmtTime = (ms: number | null): string => {
+  if (!ms || ms <= 0) return '—';
+  const s = Math.round(ms / 1000);
+  return s < 60 ? `${s}s` : `${Math.floor(s / 60)}m ${s % 60}s`;
+};
+
+const timeAgo = (ts: number): string => {
+  const d = Date.now() - ts;
+  if (d < 60_000) return `${Math.round(d / 1000)}s`;
+  if (d < 3_600_000) return `${Math.round(d / 60_000)}min`;
+  if (d < 86_400_000) return `${Math.round(d / 3_600_000)}h`;
+  return `${Math.round(d / 86_400_000)}d`;
+};
+
+const refHost = (url: string): string => {
+  try { return new URL(url).hostname.replace(/^www\./, ''); } catch { return url.slice(0, 30); }
+};
+
+// ── Data ────────────────────────────────────────────────────────────────────
+let kpi = { today: 0, week: 0, month: 0, total: 0, uniqueMonth: 0 };
+let daily:      Array<{ day: string; c: number }> = [];
+let topPages:   Array<{ page: string; c: number; avg_ms: number | null }> = [];
+let devices:    Array<{ device_type: string; c: number }> = [];
+let refs:       Array<{ host: string; c: number }> = [];
+let timeByPage: Array<{ page: string; avg_ms: number }> = [];
+let recent:     Array<{
+  page: string; referrer: string | null; device_type: string;
+  time_on_page: number | null; timestamp: number;
+}> = [];
+let dbError: string | null = null;
+
+try {
+  const { getDb } = await import('../../lib/analytics');
+  const db = getDb();
+
+  const now  = Date.now();
+  const DAY  = 86_400_000;
+  const WEEK = 7  * DAY;
+  const MONTH = 30 * DAY;
+
+  kpi = {
+    today:       (db.prepare('SELECT COUNT(*) c FROM pageviews WHERE timestamp > ?').get(now - DAY) as any).c,
+    week:        (db.prepare('SELECT COUNT(*) c FROM pageviews WHERE timestamp > ?').get(now - WEEK) as any).c,
+    month:       (db.prepare('SELECT COUNT(*) c FROM pageviews WHERE timestamp > ?').get(now - MONTH) as any).c,
+    total:       (db.prepare('SELECT COUNT(*) c FROM pageviews').get() as any).c,
+    uniqueMonth: (db.prepare("SELECT COUNT(DISTINCT ip_hash) c FROM pageviews WHERE timestamp > ?").get(now - MONTH) as any).c,
+  };
+
+  // Daily — fill empty days with 0
+  const rawDaily = db.prepare(`
+    SELECT DATE(timestamp/1000,'unixepoch') day, COUNT(*) c
+    FROM pageviews WHERE timestamp > ?
+    GROUP BY day ORDER BY day
+  `).all(now - MONTH) as Array<{ day: string; c: number }>;
+  const dm: Record<string,number> = {};
+  rawDaily.forEach(r => { dm[r.day] = r.c; });
+  for (let i = 29; i >= 0; i--) {
+    const k = new Date(now - i * DAY).toISOString().slice(0, 10);
+    daily.push({ day: k.slice(5), c: dm[k] || 0 });
+  }
+
+  topPages = db.prepare(`
+    SELECT page, COUNT(*) c, AVG(time_on_page) avg_ms
+    FROM pageviews WHERE timestamp > ?
+    GROUP BY page ORDER BY c DESC LIMIT 8
+  `).all(now - MONTH) as typeof topPages;
+
+  devices = db.prepare(`
+    SELECT device_type, COUNT(*) c
+    FROM pageviews WHERE timestamp > ?
+    GROUP BY device_type
+  `).all(now - MONTH) as typeof devices;
+
+  const rawRefs = db.prepare(`
+    SELECT referrer, COUNT(*) c
+    FROM pageviews
+    WHERE timestamp > ? AND referrer IS NOT NULL AND referrer != ''
+    GROUP BY referrer ORDER BY c DESC LIMIT 8
+  `).all(now - MONTH) as Array<{ referrer: string; c: number }>;
+  refs = rawRefs.map(r => ({ host: refHost(r.referrer), c: r.c }));
+
+  timeByPage = db.prepare(`
+    SELECT page, AVG(time_on_page) avg_ms
+    FROM pageviews
+    WHERE timestamp > ? AND time_on_page IS NOT NULL AND time_on_page > 1000
+    GROUP BY page ORDER BY avg_ms DESC LIMIT 6
+  `).all(now - MONTH) as typeof timeByPage;
+
+  recent = db.prepare(`
+    SELECT page, referrer, device_type, time_on_page, timestamp
+    FROM pageviews ORDER BY timestamp DESC LIMIT 25
+  `).all() as typeof recent;
+
+} catch (e: any) {
+  dbError = e?.message || 'Error al conectar con la base de datos de analytics';
+}
+
+// Serialise for Chart.js (embedded as JSON)
+const chartJson = JSON.stringify({
+  daily:   { labels: daily.map(d => d.day),            data: daily.map(d => d.c) },
+  pages:   { labels: topPages.map(p => fmtPage(p.page)), data: topPages.map(p => p.c) },
+  devices: { labels: devices.map(d => d.device_type),  data: devices.map(d => d.c) },
+  refs:    { labels: refs.map(r => r.host),             data: refs.map(r => r.c) },
+  time:    { labels: timeByPage.map(p => fmtPage(p.page)), data: timeByPage.map(p => Math.round(p.avg_ms / 1000)) },
+});
+
+const updatedAt = new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+
+const kpiCards = [
+  { label: 'Hoy',         val: kpi.today,       color: 'text-[#F26A1B]', bg: 'bg-[#F26A1B]/10', icon: '<path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>' },
+  { label: 'Esta semana', val: kpi.week,        color: 'text-[#74ACDF]', bg: 'bg-[#74ACDF]/10', icon: '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>' },
+  { label: 'Este mes',    val: kpi.month,       color: 'text-[#E9B949]', bg: 'bg-[#E9B949]/10', icon: '<path d="M3 3v18h18"/><path d="M18 17V9M13 17V5M8 17v-3"/>' },
+  { label: 'Total',       val: kpi.total,       color: 'text-white',     bg: 'bg-white/5',      icon: '<circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/>' },
+  { label: 'Únicos/mes',  val: kpi.uniqueMonth, color: 'text-[#F26A1B]', bg: 'bg-[#F26A1B]/10', icon: '<path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>' },
+];
+---
+
+<Layout title="Analíticas · Novatek Admin">
+
+  <!-- Admin nav -->
+  <header class="sticky top-0 z-50 border-b border-white/10 bg-[#060D18]/95 backdrop-blur-md">
+    <div class="mx-auto flex max-w-screen-xl items-center justify-between px-5 py-3">
+      <div class="flex items-center gap-4">
+        <a href="/admin"
+          class="flex items-center gap-2 rounded-lg border border-white/10 bg-navy-800 px-3 py-2 text-xs font-medium text-white/55 transition hover:text-white">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 12H5M12 5l-7 7 7 7" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Admin
+        </a>
+        <div>
+          <h1 class="font-display text-base text-white tracking-wider">ANALÍTICAS DEL SITIO</h1>
+          <p class="text-xs text-white/35">Datos reales · últimos 30 días · actualizado {updatedAt}</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="location.reload()"
+          class="rounded-lg border border-white/10 bg-navy-800 px-3 py-2 text-xs font-medium text-white/55 transition hover:text-white">
+          Refrescar
+        </button>
+        <form method="POST" action="/api/admin-logout">
+          <button type="submit"
+            class="flex items-center gap-1.5 rounded-lg border border-white/10 bg-navy-800 px-3 py-2 text-xs font-medium text-white/55 transition hover:border-red-500/40 hover:text-red-300">
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Salir
+          </button>
+        </form>
+      </div>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-screen-xl space-y-6 px-5 py-8">
+
+    {dbError && (
+      <div class="rounded-2xl border border-red-500/30 bg-red-900/20 p-6 text-red-300">
+        <p class="font-bold">Error de base de datos</p>
+        <p class="mt-1 text-sm">{dbError}</p>
+        <p class="mt-3 text-xs text-red-400/60">
+          Ejecutá <code class="bg-red-900/40 px-1 rounded">pnpm install</code> para instalar
+          <code class="bg-red-900/40 px-1 rounded">better-sqlite3</code> y reiniciá el servidor.
+          El directorio <code class="bg-red-900/40 px-1 rounded">./data/</code> se crea automáticamente.
+        </p>
+      </div>
+    )}
+
+    <!-- KPI cards -->
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+      {kpiCards.map(k => (
+        <div class="rounded-2xl border border-white/10 bg-[#0D1B2E] p-5">
+          <span class={`inline-flex h-9 w-9 items-center justify-center rounded-xl ${k.bg}`}>
+            <svg class={`h-5 w-5 ${k.color}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" set:html={k.icon}/>
+          </span>
+          <div class={`mt-3 font-display text-4xl ${k.color}`}>{k.val.toLocaleString('es-AR')}</div>
+          <div class="mt-1 text-xs text-white/40">{k.label}</div>
+        </div>
+      ))}
+    </div>
+
+    <!-- Line chart: visitas diarias -->
+    <div class="rounded-2xl border border-white/10 bg-[#0D1B2E] p-6">
+      <h2 class="mb-5 text-xs font-bold uppercase tracking-widest text-white/40">Visitas por día · últimos 30 días</h2>
+      <div style="position:relative;height:200px">
+        <canvas id="chart-daily"></canvas>
+      </div>
+    </div>
+
+    <!-- Top pages + Devices -->
+    <div class="grid lg:grid-cols-3 gap-6">
+      <div class="lg:col-span-2 rounded-2xl border border-white/10 bg-[#0D1B2E] p-6">
+        <h2 class="mb-5 text-xs font-bold uppercase tracking-widest text-white/40">Páginas más visitadas</h2>
+        <div style="position:relative;height:210px">
+          <canvas id="chart-pages"></canvas>
+        </div>
+      </div>
+      <div class="rounded-2xl border border-white/10 bg-[#0D1B2E] p-6 flex flex-col">
+        <h2 class="mb-5 text-xs font-bold uppercase tracking-widest text-white/40">Dispositivos</h2>
+        <div class="flex-1 flex items-center justify-center" style="max-height:210px">
+          <canvas id="chart-devices"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Referrers + Time on page -->
+    <div class="grid lg:grid-cols-2 gap-6">
+      <div class="rounded-2xl border border-white/10 bg-[#0D1B2E] p-6">
+        <h2 class="mb-5 text-xs font-bold uppercase tracking-widest text-white/40">Fuentes de tráfico</h2>
+        {refs.length > 0 ? (
+          <div style="position:relative;height:200px">
+            <canvas id="chart-refs"></canvas>
+          </div>
+        ) : (
+          <p class="text-sm text-white/25 pt-4">Sin datos de referrers aún · se irán registrando con el uso</p>
+        )}
+      </div>
+      <div class="rounded-2xl border border-white/10 bg-[#0D1B2E] p-6">
+        <h2 class="mb-5 text-xs font-bold uppercase tracking-widest text-white/40">Tiempo promedio en página (seg)</h2>
+        {timeByPage.length > 0 ? (
+          <div style="position:relative;height:200px">
+            <canvas id="chart-time"></canvas>
+          </div>
+        ) : (
+          <p class="text-sm text-white/25 pt-4">Sin datos de tiempo aún · se acumulan con las visitas</p>
+        )}
+      </div>
+    </div>
+
+    <!-- Recent visits -->
+    <div class="rounded-2xl border border-white/10 bg-[#0D1B2E] overflow-hidden">
+      <div class="border-b border-white/10 px-6 py-4">
+        <h2 class="text-xs font-bold uppercase tracking-widest text-white/40">Actividad reciente</h2>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-white/5 text-xs text-white/25 uppercase tracking-widest">
+              <th class="px-6 py-3 text-left">Página</th>
+              <th class="px-6 py-3 text-left">Dispositivo</th>
+              <th class="px-6 py-3 text-left">Origen</th>
+              <th class="px-6 py-3 text-left">Tiempo</th>
+              <th class="px-6 py-3 text-left">Hace</th>
+            </tr>
+          </thead>
+          <tbody>
+            {recent.length === 0 ? (
+              <tr>
+                <td colspan="5" class="px-6 py-10 text-center text-white/25">
+                  Sin visitas registradas aún.<br/>
+                  <span class="text-xs">Navegá el sitio para empezar a ver datos aquí.</span>
+                </td>
+              </tr>
+            ) : recent.map((r, i) => (
+              <tr class={`border-b border-white/5 hover:bg-white/[0.03] transition-colors ${i === 0 ? 'bg-[#F26A1B]/5' : ''}`}>
+                <td class="px-6 py-3 font-semibold text-white">{fmtPage(r.page)}</td>
+                <td class="px-6 py-3">
+                  <span class={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                    r.device_type === 'móvil'  ? 'bg-[#F26A1B]/15 text-[#F26A1B]' :
+                    r.device_type === 'tablet' ? 'bg-[#E9B949]/15 text-[#E9B949]' :
+                                                  'bg-[#74ACDF]/15 text-[#74ACDF]'
+                  }`}>{r.device_type}</span>
+                </td>
+                <td class="px-6 py-3 text-white/35 max-w-[180px] truncate">
+                  {r.referrer ? refHost(r.referrer) : <span class="text-white/15">directo</span>}
+                </td>
+                <td class="px-6 py-3 text-white/45 font-mono text-xs">{fmtTime(r.time_on_page)}</td>
+                <td class="px-6 py-3 text-white/25 font-mono text-xs">{timeAgo(r.timestamp)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Chart data embedded as JSON (read by init script below) -->
+  <script type="application/json" id="__chart_data__" set:html={chartJson}></script>
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js" is:inline></script>
+
+  <!-- Charts init -->
+  <script is:inline>
+    (function () {
+      const raw = document.getElementById('__chart_data__');
+      if (!raw) return;
+      const cd = JSON.parse(raw.textContent || '{}');
+
+      const ORANGE  = '#F26A1B';
+      const CELESTE = '#74ACDF';
+      const GOLD    = '#E9B949';
+      const NAVY    = '#0D1B2E';
+      const GRID    = 'rgba(255,255,255,0.06)';
+      const TICK    = 'rgba(255,255,255,0.35)';
+
+      Chart.defaults.color = TICK;
+      Chart.defaults.font.family = 'Inter, sans-serif';
+      Chart.defaults.font.size = 11;
+
+      function baseOpts(title) {
+        return {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#0A1628',
+              borderColor: 'rgba(255,255,255,0.12)',
+              borderWidth: 1,
+              titleColor: '#fff',
+              bodyColor: 'rgba(255,255,255,0.7)',
+              padding: 10,
+            },
+          },
+          scales: {
+            x: { grid: { color: GRID }, ticks: { color: TICK } },
+            y: { grid: { color: GRID }, ticks: { color: TICK } },
+          },
+        };
+      }
+
+      // 1. Daily line chart
+      const ctxD = document.getElementById('chart-daily');
+      if (ctxD && cd.daily) {
+        new Chart(ctxD, {
+          type: 'line',
+          data: {
+            labels: cd.daily.labels,
+            datasets: [{
+              label: 'Visitas',
+              data: cd.daily.data,
+              borderColor: ORANGE,
+              backgroundColor: 'rgba(242,106,27,0.12)',
+              pointBackgroundColor: ORANGE,
+              pointRadius: 3,
+              pointHoverRadius: 5,
+              tension: 0.4,
+              fill: true,
+            }],
+          },
+          options: baseOpts('Visitas'),
+        });
+      }
+
+      // 2. Top pages bar chart
+      const ctxP = document.getElementById('chart-pages');
+      if (ctxP && cd.pages) {
+        new Chart(ctxP, {
+          type: 'bar',
+          data: {
+            labels: cd.pages.labels,
+            datasets: [{
+              label: 'Visitas',
+              data: cd.pages.data,
+              backgroundColor: cd.pages.data.map((_, i) => i === 0 ? ORANGE : 'rgba(242,106,27,0.35)'),
+              borderRadius: 6,
+            }],
+          },
+          options: { ...baseOpts('Páginas'), plugins: { ...baseOpts('Páginas').plugins, legend: { display: false } } },
+        });
+      }
+
+      // 3. Devices doughnut
+      const ctxDev = document.getElementById('chart-devices');
+      if (ctxDev && cd.devices && cd.devices.data.length) {
+        new Chart(ctxDev, {
+          type: 'doughnut',
+          data: {
+            labels: cd.devices.labels,
+            datasets: [{
+              data: cd.devices.data,
+              backgroundColor: [ORANGE, CELESTE, GOLD, 'rgba(255,255,255,0.2)'],
+              borderColor: NAVY,
+              borderWidth: 3,
+              hoverOffset: 6,
+            }],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: true, position: 'bottom', labels: { color: TICK, padding: 12, boxWidth: 10 } },
+              tooltip: baseOpts('').plugins.tooltip,
+            },
+            cutout: '62%',
+          },
+        });
+      }
+
+      // 4. Referrers horizontal bar
+      const ctxR = document.getElementById('chart-refs');
+      if (ctxR && cd.refs && cd.refs.data.length) {
+        new Chart(ctxR, {
+          type: 'bar',
+          data: {
+            labels: cd.refs.labels,
+            datasets: [{
+              label: 'Visitas',
+              data: cd.refs.data,
+              backgroundColor: 'rgba(116,172,223,0.5)',
+              borderColor: CELESTE,
+              borderWidth: 1,
+              borderRadius: 4,
+            }],
+          },
+          options: {
+            ...baseOpts('Refs'),
+            indexAxis: 'y',
+          },
+        });
+      }
+
+      // 5. Time on page bar
+      const ctxT = document.getElementById('chart-time');
+      if (ctxT && cd.time && cd.time.data.length) {
+        new Chart(ctxT, {
+          type: 'bar',
+          data: {
+            labels: cd.time.labels,
+            datasets: [{
+              label: 'Segundos',
+              data: cd.time.data,
+              backgroundColor: 'rgba(233,185,73,0.45)',
+              borderColor: GOLD,
+              borderWidth: 1,
+              borderRadius: 4,
+            }],
+          },
+          options: baseOpts('Tiempo'),
+        });
+      }
+    })();
+  </script>
+</Layout>
