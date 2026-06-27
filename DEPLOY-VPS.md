@@ -11,12 +11,12 @@ y apuntar el dominio `novatekargentina.com.ar` (hoy en WordPress) a esta nueva a
 ## 0. Resumen de la arquitectura
 
 ```
-Internet → Nginx (puerto 80/443, SSL) → PM2 → Node (Astro SSR, puerto 3000)
+Internet → Nginx (puerto 80/443, SSL) → PM2 → Node (Astro SSR, puerto 3500)
                                                    └─ ./data/analytics.db (SQLite)
 ```
 
 - **Build:** `pnpm build` genera `dist/server/entry.mjs` (servidor) + `dist/client/` (estáticos).
-- **Run:** PM2 ejecuta `dist/server/entry.mjs` escuchando en `127.0.0.1:3000`.
+- **Run:** PM2 ejecuta `dist/server/entry.mjs` escuchando en `127.0.0.1:3500`.
 - **Nginx** hace de reverse proxy y termina SSL (Let's Encrypt).
 
 ---
@@ -107,7 +107,7 @@ ANALYTICS_DB_PATH=/var/www/novatek/data/analytics.db
 
 ## 4. Arrancar con PM2
 
-El repo ya incluye `ecosystem.config.cjs` (puerto 3000, modo fork, autorestart):
+El repo ya incluye `ecosystem.config.cjs` (puerto 3500, modo fork, autorestart):
 
 ```bash
 cd /var/www/novatek
@@ -120,7 +120,7 @@ pm2 startup                    # genera el comando para arrancar PM2 al bootear
 Comprobá que responde localmente:
 
 ```bash
-curl -I http://127.0.0.1:3000      # debe devolver 200 OK
+curl -I http://127.0.0.1:3500      # debe devolver 200 OK
 pm2 logs novatek                   # ver logs en vivo
 pm2 status                         # estado del proceso
 ```
@@ -145,7 +145,7 @@ server {
     }
 
     location / {
-        proxy_pass http://127.0.0.1:3000;
+        proxy_pass http://127.0.0.1:3500;
         proxy_http_version 1.1;
         proxy_set_header Host              $host;
         proxy_set_header X-Real-IP         $remote_addr;
@@ -271,7 +271,7 @@ Backup simple por cron diario:
 
 ## 10. Checklist final
 
-- [ ] `curl -I http://127.0.0.1:3000` → 200 OK
+- [ ] `curl -I http://127.0.0.1:3500` → 200 OK
 - [ ] `pm2 status` → novatek **online**
 - [ ] `pm2 startup` + `pm2 save` ejecutados (sobrevive a reinicios)
 - [ ] Nginx proxy activo, WordPress viejo desactivado
@@ -288,7 +288,7 @@ Backup simple por cron diario:
 | Síntoma | Causa probable | Solución |
 |---------|----------------|----------|
 | `/admin/analytics` muestra "Error de base de datos" | `better-sqlite3` no compiló | `sudo apt-get install -y build-essential python3` y `pnpm rebuild better-sqlite3` |
-| 502 Bad Gateway | la app no corre en :3000 | `pm2 logs novatek` para ver el error; `pm2 restart novatek` |
+| 502 Bad Gateway | la app no corre en :3500 | `pm2 logs novatek` para ver el error; `pm2 restart novatek` |
 | Visitas no se registran | falta `X-Forwarded-For` | revisá el bloque `proxy_set_header` del Nginx |
 | Estáticos sin cargar | ruta `_astro` mal | confirmá que `alias` apunta a `dist/client/_astro/` |
 | Cambios no se ven | build viejo | `pnpm build && pm2 reload novatek` |
