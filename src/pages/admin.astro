@@ -1,8 +1,5 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import { AdminPanel } from '../components/Admin/AdminPanel';
+// El panel de admin es únicamente la página de analíticas.
+// /admin redirige directamente a /admin/analytics (que valida la sesión).
+return Astro.redirect('/admin/analytics');
 ---
-
-<Layout title="Repuestos Mendez - Panel de Administrador">
-  <AdminPanel client:load />
-</Layout>
