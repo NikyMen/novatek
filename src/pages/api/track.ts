@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { getDb, hashIp, getDeviceType } from '../../lib/analytics';
+import { getDb, hashIp, getDeviceType, getCountry } from '../../lib/analytics';
 
 export const POST: APIRoute = async ({ request, clientAddress }) => {
   try {
@@ -12,11 +12,13 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
       db.prepare(`UPDATE pageviews SET time_on_page = ? WHERE view_id = ?`)
         .run(body.time_on_page, body.view_id);
     } else if (body.page) {
-      const ip = clientAddress || request.headers.get('x-forwarded-for')?.split(',')[0] || '';
+      // IP real del cliente: primero X-Forwarded-For (detrás de Nginx/CDN), luego clientAddress
+      const ip = request.headers.get('x-forwarded-for')?.split(',')[0].trim()
+        || clientAddress || '';
       const ua = request.headers.get('user-agent') || '';
       db.prepare(`
-        INSERT INTO pageviews (view_id, page, referrer, user_agent, ip_hash, session_id, device_type, timestamp)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO pageviews (view_id, page, referrer, user_agent, ip_hash, session_id, device_type, country, timestamp)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
       `).run(
         body.view_id || null,
         String(body.page).slice(0, 200),
@@ -25,6 +27,7 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
         hashIp(ip),
         body.session_id ? String(body.session_id).slice(0, 64) : null,
         getDeviceType(ua),
+        getCountry(ip, request.headers),
         Date.now(),
       );
     }

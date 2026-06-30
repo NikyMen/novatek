@@ -1,6 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import { isAuthenticated } from '../../lib/auth';
+import { sourceMedium, countryName, countryFlag } from '../../lib/analytics';
 
 // Protección: sin sesión válida → al login
 if (!isAuthenticated(Astro.cookies)) {
@@ -14,15 +15,13 @@ const PAGE_NAMES: Record<string, string> = {
   '/contacto': 'Contacto',
   '/novedades': 'Novedades',
 };
-
 const fmtPage = (p: string) => PAGE_NAMES[p] || p;
 
 const fmtTime = (ms: number | null): string => {
-  if (!ms || ms <= 0) return '—';
+  if (!ms || ms <= 0) return '0 s';
   const s = Math.round(ms / 1000);
-  return s < 60 ? `${s}s` : `${Math.floor(s / 60)}m ${s % 60}s`;
+  return s < 60 ? `${s} s` : `${Math.floor(s / 60)} m ${s % 60} s`;
 };
-
 const timeAgo = (ts: number): string => {
   const d = Date.now() - ts;
   if (d < 60_000) return `${Math.round(d / 1000)}s`;
@@ -30,83 +29,146 @@ const timeAgo = (ts: number): string => {
   if (d < 86_400_000) return `${Math.round(d / 3_600_000)}h`;
   return `${Math.round(d / 86_400_000)}d`;
 };
+const pct = (n: number) => `${(n * 100).toFixed(1)}%`;
+const dayKey = (ts: number) => new Date(ts).toISOString().slice(0, 10);
 
-const refHost = (url: string): string => {
-  try { return new URL(url).hostname.replace(/^www\./, ''); } catch { return url.slice(0, 30); }
+// Rango seleccionable: 7 / 30 / 90 días (?d=)
+const DAY = 86_400_000;
+const dParam = Number(Astro.url.searchParams.get('d'));
+const rangeDays = [7, 30, 90].includes(dParam) ? dParam : 30;
+
+type Row = {
+  page: string; referrer: string | null; ip_hash: string; session_id: string | null;
+  device_type: string; country: string | null; time_on_page: number | null; timestamp: number;
 };
 
-// ── Data ────────────────────────────────────────────────────────────────────
-let kpi = { today: 0, week: 0, month: 0, total: 0, uniqueMonth: 0 };
-let daily:      Array<{ day: string; c: number }> = [];
-let topPages:   Array<{ page: string; c: number; avg_ms: number | null }> = [];
-let devices:    Array<{ device_type: string; c: number }> = [];
-let refs:       Array<{ host: string; c: number }> = [];
-let timeByPage: Array<{ page: string; avg_ms: number }> = [];
-let recent:     Array<{
-  page: string; referrer: string | null; device_type: string;
-  time_on_page: number | null; timestamp: number;
-}> = [];
+// ── Métricas ──────────────────────────────────────────────────────────────────
+let kpi = { activeUsers: 0, newUsers: 0, avgEngagement: 0, events: 0 };
+let pages: Array<{ page: string; views: number; users: number; events: number; bounce: number | null }> = [];
+let usersBySource: Array<{ sm: string; users: number }> = [];
+let sessionsBySource: Array<{ sm: string; sessions: number }> = [];
+let countries: Array<{ code: string | null; users: number }> = [];
+let platforms: Array<{ name: string; events: number }> = [];
+let audiences: Array<{ name: string; users: number }> = [];
+let daily: Array<{ day: string; nw: number; rt: number }> = [];
+let recent: Array<{ page: string; referrer: string | null; device_type: string; country: string | null; time_on_page: number | null; timestamp: number }> = [];
 let dbError: string | null = null;
 
 try {
   const { getDb } = await import('../../lib/analytics');
   const db = getDb();
+  const now = Date.now();
+  const rangeStart = now - rangeDays * DAY;
 
-  const now  = Date.now();
-  const DAY  = 86_400_000;
-  const WEEK = 7  * DAY;
-  const MONTH = 30 * DAY;
+  const rows = db.prepare(`
+    SELECT page, referrer, ip_hash, session_id, device_type, country, time_on_page, timestamp
+    FROM pageviews WHERE timestamp > ?
+  `).all(rangeStart) as Row[];
 
+  // Primera vez que se vio cada usuario (todo el histórico) → nuevos vs recurrentes
+  const fsRows = db.prepare('SELECT ip_hash, MIN(timestamp) m FROM pageviews GROUP BY ip_hash').all() as Array<{ ip_hash: string; m: number }>;
+  const firstSeen = new Map(fsRows.map(x => [x.ip_hash, x.m]));
+
+  // Clave de sesión (fallback a IP si no hay session_id)
+  const sk = (r: Row) => r.session_id || 'ip:' + r.ip_hash;
+
+  // KPIs
+  // Tope por vista: una pestaña abandonada (abierta horas) mete un outlier que
+  // distorsiona el promedio. Se descarta el excedente sobre 30 min, como hace GA.
+  const ENGAGE_CAP = 30 * 60 * 1000;
+  const activeSet = new Set<string>();
+  let totalEngagement = 0;
+  for (const r of rows) { activeSet.add(r.ip_hash); totalEngagement += Math.min(r.time_on_page || 0, ENGAGE_CAP); }
+  const newSet = new Set<string>();
+  for (const ip of activeSet) { if ((firstSeen.get(ip) ?? 0) >= rangeStart) newSet.add(ip); }
   kpi = {
-    today:       (db.prepare('SELECT COUNT(*) c FROM pageviews WHERE timestamp > ?').get(now - DAY) as any).c,
-    week:        (db.prepare('SELECT COUNT(*) c FROM pageviews WHERE timestamp > ?').get(now - WEEK) as any).c,
-    month:       (db.prepare('SELECT COUNT(*) c FROM pageviews WHERE timestamp > ?').get(now - MONTH) as any).c,
-    total:       (db.prepare('SELECT COUNT(*) c FROM pageviews').get() as any).c,
-    uniqueMonth: (db.prepare("SELECT COUNT(DISTINCT ip_hash) c FROM pageviews WHERE timestamp > ?").get(now - MONTH) as any).c,
+    activeUsers: activeSet.size,
+    newUsers: newSet.size,
+    avgEngagement: activeSet.size ? Math.round(totalEngagement / activeSet.size) : 0,
+    events: rows.length,
   };
 
-  // Daily — fill empty days with 0
-  const rawDaily = db.prepare(`
-    SELECT DATE(timestamp/1000,'unixepoch') day, COUNT(*) c
-    FROM pageviews WHERE timestamp > ?
-    GROUP BY day ORDER BY day
-  `).all(now - MONTH) as Array<{ day: string; c: number }>;
-  const dm: Record<string,number> = {};
-  rawDaily.forEach(r => { dm[r.day] = r.c; });
-  for (let i = 29; i >= 0; i--) {
+  // Sesiones → landing + páginas por sesión (para rebote y fuente/medio)
+  const sessMap = new Map<string, Row[]>();
+  for (const r of rows) {
+    let a = sessMap.get(sk(r)); if (!a) { a = []; sessMap.set(sk(r), a); } a.push(r);
+  }
+  const landingAgg = new Map<string, { total: number; bounced: number }>();
+  const sessSrc = new Map<string, number>();
+  for (const rs of sessMap.values()) {
+    const landing = rs.reduce((a, b) => (b.timestamp < a.timestamp ? b : a));
+    const e = landingAgg.get(landing.page) || { total: 0, bounced: 0 };
+    e.total++; if (rs.length === 1) e.bounced++; landingAgg.set(landing.page, e);
+    const sm = sourceMedium(landing.referrer);
+    sessSrc.set(sm, (sessSrc.get(sm) || 0) + 1);
+  }
+  sessionsBySource = [...sessSrc.entries()].map(([sm, sessions]) => ({ sm, sessions }))
+    .sort((a, b) => b.sessions - a.sessions).slice(0, 8);
+
+  // Páginas principales
+  const pageAgg = new Map<string, { views: number; users: Set<string> }>();
+  for (const r of rows) {
+    let p = pageAgg.get(r.page); if (!p) { p = { views: 0, users: new Set() }; pageAgg.set(r.page, p); }
+    p.views++; p.users.add(r.ip_hash);
+  }
+  pages = [...pageAgg.entries()].map(([page, v]) => {
+    const l = landingAgg.get(page);
+    return { page, views: v.views, users: v.users.size, events: v.views, bounce: l && l.total ? l.bounced / l.total : null };
+  }).sort((a, b) => b.views - a.views).slice(0, 8);
+
+  // Usuarios por primera fuente/medio (primer registro de cada usuario en el rango)
+  const userEarliest = new Map<string, Row>();
+  for (const r of rows) {
+    const e = userEarliest.get(r.ip_hash);
+    if (!e || r.timestamp < e.timestamp) userEarliest.set(r.ip_hash, r);
+  }
+  const userSrc = new Map<string, number>();
+  for (const r of userEarliest.values()) {
+    const sm = sourceMedium(r.referrer);
+    userSrc.set(sm, (userSrc.get(sm) || 0) + 1);
+  }
+  usersBySource = [...userSrc.entries()].map(([sm, users]) => ({ sm, users }))
+    .sort((a, b) => b.users - a.users).slice(0, 8);
+
+  // Usuarios por país
+  const countryUsers = new Map<string | null, Set<string>>();
+  for (const r of rows) {
+    const c = r.country || null;
+    let s = countryUsers.get(c); if (!s) { s = new Set(); countryUsers.set(c, s); } s.add(r.ip_hash);
+  }
+  countries = [...countryUsers.entries()].map(([code, s]) => ({ code, users: s.size }))
+    .sort((a, b) => b.users - a.users).slice(0, 8);
+
+  // Eventos por plataforma (dispositivo)
+  const devAgg = new Map<string, number>();
+  for (const r of rows) devAgg.set(r.device_type, (devAgg.get(r.device_type) || 0) + 1);
+  platforms = [...devAgg.entries()].map(([name, events]) => ({ name, events }))
+    .sort((a, b) => b.events - a.events);
+
+  // Audiencias
+  audiences = [
+    { name: 'Todos los usuarios', users: kpi.activeUsers },
+    { name: 'Usuarios nuevos', users: kpi.newUsers },
+    { name: 'Usuarios recurrentes', users: Math.max(0, kpi.activeUsers - kpi.newUsers) },
+  ];
+
+  // Serie diaria: nuevos vs recurrentes
+  const perDay = new Map<string, { nw: Set<string>; rt: Set<string> }>();
+  for (const r of rows) {
+    const d = dayKey(r.timestamp);
+    let e = perDay.get(d); if (!e) { e = { nw: new Set(), rt: new Set() }; perDay.set(d, e); }
+    const isNew = dayKey(firstSeen.get(r.ip_hash) ?? r.timestamp) === d;
+    (isNew ? e.nw : e.rt).add(r.ip_hash);
+  }
+  for (let i = rangeDays - 1; i >= 0; i--) {
     const k = new Date(now - i * DAY).toISOString().slice(0, 10);
-    daily.push({ day: k.slice(5), c: dm[k] || 0 });
+    const e = perDay.get(k);
+    daily.push({ day: k.slice(5), nw: e ? e.nw.size : 0, rt: e ? e.rt.size : 0 });
   }
 
-  topPages = db.prepare(`
-    SELECT page, COUNT(*) c, AVG(time_on_page) avg_ms
-    FROM pageviews WHERE timestamp > ?
-    GROUP BY page ORDER BY c DESC LIMIT 8
-  `).all(now - MONTH) as typeof topPages;
-
-  devices = db.prepare(`
-    SELECT device_type, COUNT(*) c
-    FROM pageviews WHERE timestamp > ?
-    GROUP BY device_type
-  `).all(now - MONTH) as typeof devices;
-
-  const rawRefs = db.prepare(`
-    SELECT referrer, COUNT(*) c
-    FROM pageviews
-    WHERE timestamp > ? AND referrer IS NOT NULL AND referrer != ''
-    GROUP BY referrer ORDER BY c DESC LIMIT 8
-  `).all(now - MONTH) as Array<{ referrer: string; c: number }>;
-  refs = rawRefs.map(r => ({ host: refHost(r.referrer), c: r.c }));
-
-  timeByPage = db.prepare(`
-    SELECT page, AVG(time_on_page) avg_ms
-    FROM pageviews
-    WHERE timestamp > ? AND time_on_page IS NOT NULL AND time_on_page > 1000
-    GROUP BY page ORDER BY avg_ms DESC LIMIT 6
-  `).all(now - MONTH) as typeof timeByPage;
-
+  // Actividad reciente
   recent = db.prepare(`
-    SELECT page, referrer, device_type, time_on_page, timestamp
+    SELECT page, referrer, device_type, country, time_on_page, timestamp
     FROM pageviews ORDER BY timestamp DESC LIMIT 25
   `).all() as typeof recent;
 
@@ -114,42 +176,44 @@ try {
   dbError = e?.message || 'Error al conectar con la base de datos de analytics';
 }
 
-// Serialise for Chart.js (embedded as JSON)
+const maxUsersSrc = Math.max(1, ...usersBySource.map(x => x.users));
+const maxSessSrc = Math.max(1, ...sessionsBySource.map(x => x.sessions));
+const maxCountry = Math.max(1, ...countries.map(x => x.users));
+
 const chartJson = JSON.stringify({
-  daily:   { labels: daily.map(d => d.day),            data: daily.map(d => d.c) },
-  pages:   { labels: topPages.map(p => fmtPage(p.page)), data: topPages.map(p => p.c) },
-  devices: { labels: devices.map(d => d.device_type),  data: devices.map(d => d.c) },
-  refs:    { labels: refs.map(r => r.host),             data: refs.map(r => r.c) },
-  time:    { labels: timeByPage.map(p => fmtPage(p.page)), data: timeByPage.map(p => Math.round(p.avg_ms / 1000)) },
+  daily: { labels: daily.map(d => d.day), nw: daily.map(d => d.nw), rt: daily.map(d => d.rt) },
+  platforms: { labels: platforms.map(p => p.name), data: platforms.map(p => p.events) },
 });
 
 const updatedAt = new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
 
 const kpiCards = [
-  { label: 'Hoy',         val: kpi.today,       color: 'text-[#F26A1B]', bg: 'bg-[#F26A1B]/10', icon: '<path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>' },
-  { label: 'Esta semana', val: kpi.week,        color: 'text-[#74ACDF]', bg: 'bg-[#74ACDF]/10', icon: '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>' },
-  { label: 'Este mes',    val: kpi.month,       color: 'text-[#E9B949]', bg: 'bg-[#E9B949]/10', icon: '<path d="M3 3v18h18"/><path d="M18 17V9M13 17V5M8 17v-3"/>' },
-  { label: 'Total',       val: kpi.total,       color: 'text-white',     bg: 'bg-white/5',      icon: '<circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/>' },
-  { label: 'Únicos/mes',  val: kpi.uniqueMonth, color: 'text-[#F26A1B]', bg: 'bg-[#F26A1B]/10', icon: '<path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>' },
+  { label: 'Usuarios activos', val: kpi.activeUsers.toLocaleString('es-AR'), color: 'text-[#F26A1B]' },
+  { label: 'Usuarios nuevos', val: kpi.newUsers.toLocaleString('es-AR'), color: 'text-[#74ACDF]' },
+  { label: 'Tiempo de interacción medio por usuario', val: fmtTime(kpi.avgEngagement), color: 'text-[#E9B949]' },
+  { label: 'Número de eventos', val: kpi.events.toLocaleString('es-AR'), color: 'text-white' },
 ];
+
+const ranges = [{ d: 7, l: '7 días' }, { d: 30, l: '30 días' }, { d: 90, l: '90 días' }];
 ---
 
 <Layout title="Analíticas · Novatek Admin">
 
-  <!-- Admin nav -->
   <header class="sticky top-0 z-50 border-b border-white/10 bg-[#060D18]/95 backdrop-blur-md">
     <div class="mx-auto flex max-w-screen-xl items-center justify-between px-5 py-3">
-      <div class="flex items-center gap-4">
-        <div>
-          <h1 class="font-display text-base text-white tracking-wider">ANALÍTICAS DEL SITIO</h1>
-          <p class="text-xs text-white/35">Datos reales · últimos 30 días · actualizado {updatedAt}</p>
-        </div>
+      <div>
+        <h1 class="font-display text-base text-white tracking-wider">ANALÍTICAS DEL SITIO</h1>
+        <p class="text-xs text-white/35">Datos reales · últimos {rangeDays} días · actualizado {updatedAt}</p>
       </div>
       <div class="flex items-center gap-2">
-        <button onclick="location.reload()"
-          class="rounded-lg border border-white/10 bg-navy-800 px-3 py-2 text-xs font-medium text-white/55 transition hover:text-white">
-          Refrescar
-        </button>
+        <div class="flex items-center rounded-lg border border-white/10 bg-navy-800 p-0.5">
+          {ranges.map(r => (
+            <a href={`/admin/analytics?d=${r.d}`}
+              class={`rounded-md px-2.5 py-1.5 text-xs font-medium transition ${rangeDays === r.d ? 'bg-[#F26A1B] text-white' : 'text-white/55 hover:text-white'}`}>
+              {r.l}
+            </a>
+          ))}
+        </div>
         <form method="POST" action="/api/admin-logout">
           <button type="submit"
             class="flex items-center gap-1.5 rounded-lg border border-white/10 bg-navy-800 px-3 py-2 text-xs font-medium text-white/55 transition hover:border-red-500/40 hover:text-red-300">
@@ -170,75 +234,158 @@ const kpiCards = [
         <p class="font-bold">Error de base de datos</p>
         <p class="mt-1 text-sm">{dbError}</p>
         <p class="mt-3 text-xs text-red-400/60">
-          Ejecutá <code class="bg-red-900/40 px-1 rounded">pnpm install</code> para instalar
-          <code class="bg-red-900/40 px-1 rounded">better-sqlite3</code> y reiniciá el servidor.
-          El directorio <code class="bg-red-900/40 px-1 rounded">./data/</code> se crea automáticamente.
+          Ejecutá <code class="bg-red-900/40 px-1 rounded">pnpm install</code> y reiniciá el servidor.
         </p>
       </div>
     )}
 
-    <!-- KPI cards -->
-    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+    <!-- KPIs -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
       {kpiCards.map(k => (
         <div class="rounded-2xl border border-white/10 bg-[#0D1B2E] p-5">
-          <span class={`inline-flex h-9 w-9 items-center justify-center rounded-xl ${k.bg}`}>
-            <svg class={`h-5 w-5 ${k.color}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" set:html={k.icon}/>
-          </span>
-          <div class={`mt-3 font-display text-4xl ${k.color}`}>{k.val.toLocaleString('es-AR')}</div>
-          <div class="mt-1 text-xs text-white/40">{k.label}</div>
+          <div class="text-xs text-white/40 leading-snug min-h-[2.5rem]">{k.label}</div>
+          <div class={`mt-2 font-display text-4xl ${k.color}`}>{k.val}</div>
         </div>
       ))}
     </div>
 
-    <!-- Line chart: visitas diarias -->
-    <div class="rounded-2xl border border-white/10 bg-[#0D1B2E] p-6">
-      <h2 class="mb-5 text-xs font-bold uppercase tracking-widest text-white/40">Visitas por día · últimos 30 días</h2>
-      <div style="position:relative;height:200px">
-        <canvas id="chart-daily"></canvas>
-      </div>
-    </div>
-
-    <!-- Top pages + Devices -->
+    <!-- Páginas principales + Usuarios por primera fuente/medio -->
     <div class="grid lg:grid-cols-3 gap-6">
+      <div class="lg:col-span-2 rounded-2xl border border-white/10 bg-[#0D1B2E] overflow-hidden">
+        <div class="border-b border-white/10 px-6 py-4">
+          <h2 class="text-xs font-bold uppercase tracking-widest text-white/40">Páginas o pantallas principales</h2>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-white/5 text-[11px] text-white/25 uppercase tracking-widest">
+                <th class="px-6 py-3 text-left">Página</th>
+                <th class="px-4 py-3 text-right">Vistas</th>
+                <th class="px-4 py-3 text-right">Usuarios</th>
+                <th class="px-4 py-3 text-right">Eventos</th>
+                <th class="px-6 py-3 text-right">% rebote</th>
+              </tr>
+            </thead>
+            <tbody>
+              {pages.length === 0 ? (
+                <tr><td colspan="5" class="px-6 py-10 text-center text-white/25">Sin datos en este período.</td></tr>
+              ) : pages.map(p => (
+                <tr class="border-b border-white/5 hover:bg-white/[0.03] transition-colors">
+                  <td class="px-6 py-3 font-semibold text-white">{fmtPage(p.page)}</td>
+                  <td class="px-4 py-3 text-right text-white/70 font-mono">{p.views}</td>
+                  <td class="px-4 py-3 text-right text-white/70 font-mono">{p.users}</td>
+                  <td class="px-4 py-3 text-right text-white/70 font-mono">{p.events}</td>
+                  <td class="px-6 py-3 text-right text-white/45 font-mono">{p.bounce == null ? '—' : pct(p.bounce)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="rounded-2xl border border-white/10 bg-[#0D1B2E] p-6">
+        <h2 class="mb-5 text-xs font-bold uppercase tracking-widest text-white/40">Usuarios por primera fuente/medio</h2>
+        {usersBySource.length === 0 ? (
+          <p class="text-sm text-white/25">Sin datos aún.</p>
+        ) : (
+          <ul class="space-y-3">
+            {usersBySource.map(s => (
+              <li>
+                <div class="flex items-center justify-between text-sm">
+                  <span class="text-white/70 truncate pr-2">{s.sm}</span>
+                  <span class="text-white/45 font-mono">{s.users}</span>
+                </div>
+                <div class="mt-1.5 h-1.5 rounded-full bg-white/5">
+                  <div class="h-full rounded-full bg-[#74ACDF]" style={`width:${(s.users / maxUsersSrc) * 100}%`}></div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
+
+    <!-- Sesiones por fuente/medio + Nuevos vs recurrentes -->
+    <div class="grid lg:grid-cols-3 gap-6">
+      <div class="rounded-2xl border border-white/10 bg-[#0D1B2E] p-6">
+        <h2 class="mb-5 text-xs font-bold uppercase tracking-widest text-white/40">Sesiones por fuente/medio</h2>
+        {sessionsBySource.length === 0 ? (
+          <p class="text-sm text-white/25">Sin datos aún.</p>
+        ) : (
+          <ul class="space-y-3">
+            {sessionsBySource.map(s => (
+              <li>
+                <div class="flex items-center justify-between text-sm">
+                  <span class="text-white/70 truncate pr-2">{s.sm}</span>
+                  <span class="text-white/45 font-mono">{s.sessions}</span>
+                </div>
+                <div class="mt-1.5 h-1.5 rounded-full bg-white/5">
+                  <div class="h-full rounded-full bg-[#F26A1B]" style={`width:${(s.sessions / maxSessSrc) * 100}%`}></div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
       <div class="lg:col-span-2 rounded-2xl border border-white/10 bg-[#0D1B2E] p-6">
-        <h2 class="mb-5 text-xs font-bold uppercase tracking-widest text-white/40">Páginas más visitadas</h2>
-        <div style="position:relative;height:210px">
-          <canvas id="chart-pages"></canvas>
+        <h2 class="mb-5 text-xs font-bold uppercase tracking-widest text-white/40">Usuarios nuevos vs. recurrentes</h2>
+        <div style="position:relative;height:220px">
+          <canvas id="chart-newret"></canvas>
         </div>
       </div>
+    </div>
+
+    <!-- Plataforma + País + Audiencias -->
+    <div class="grid lg:grid-cols-3 gap-6">
       <div class="rounded-2xl border border-white/10 bg-[#0D1B2E] p-6 flex flex-col">
-        <h2 class="mb-5 text-xs font-bold uppercase tracking-widest text-white/40">Dispositivos</h2>
-        <div class="flex-1 flex items-center justify-center" style="max-height:210px">
-          <canvas id="chart-devices"></canvas>
-        </div>
+        <h2 class="mb-5 text-xs font-bold uppercase tracking-widest text-white/40">Eventos por plataforma</h2>
+        {platforms.length === 0 ? (
+          <p class="text-sm text-white/25">Sin datos aún.</p>
+        ) : (
+          <div class="flex-1 flex items-center justify-center" style="max-height:220px">
+            <canvas id="chart-platform"></canvas>
+          </div>
+        )}
+      </div>
+
+      <div class="rounded-2xl border border-white/10 bg-[#0D1B2E] p-6">
+        <h2 class="mb-5 text-xs font-bold uppercase tracking-widest text-white/40">Usuarios por país</h2>
+        {countries.length === 0 ? (
+          <p class="text-sm text-white/25">Sin datos aún.</p>
+        ) : (
+          <ul class="space-y-3">
+            {countries.map(c => (
+              <li>
+                <div class="flex items-center justify-between text-sm">
+                  <span class="text-white/70 truncate pr-2">
+                    <span class="mr-1.5">{countryFlag(c.code)}</span>{countryName(c.code)}
+                  </span>
+                  <span class="text-white/45 font-mono">{c.users}</span>
+                </div>
+                <div class="mt-1.5 h-1.5 rounded-full bg-white/5">
+                  <div class="h-full rounded-full bg-[#E9B949]" style={`width:${(c.users / maxCountry) * 100}%`}></div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      <div class="rounded-2xl border border-white/10 bg-[#0D1B2E] p-6">
+        <h2 class="mb-5 text-xs font-bold uppercase tracking-widest text-white/40">Audiencias</h2>
+        <ul class="divide-y divide-white/5">
+          {audiences.map(a => (
+            <li class="flex items-center justify-between py-3 text-sm">
+              <span class="text-white/70">{a.name}</span>
+              <span class="font-display text-2xl text-white">{a.users}</span>
+            </li>
+          ))}
+        </ul>
       </div>
     </div>
 
-    <!-- Referrers + Time on page -->
-    <div class="grid lg:grid-cols-2 gap-6">
-      <div class="rounded-2xl border border-white/10 bg-[#0D1B2E] p-6">
-        <h2 class="mb-5 text-xs font-bold uppercase tracking-widest text-white/40">Fuentes de tráfico</h2>
-        {refs.length > 0 ? (
-          <div style="position:relative;height:200px">
-            <canvas id="chart-refs"></canvas>
-          </div>
-        ) : (
-          <p class="text-sm text-white/25 pt-4">Sin datos de referrers aún · se irán registrando con el uso</p>
-        )}
-      </div>
-      <div class="rounded-2xl border border-white/10 bg-[#0D1B2E] p-6">
-        <h2 class="mb-5 text-xs font-bold uppercase tracking-widest text-white/40">Tiempo promedio en página (seg)</h2>
-        {timeByPage.length > 0 ? (
-          <div style="position:relative;height:200px">
-            <canvas id="chart-time"></canvas>
-          </div>
-        ) : (
-          <p class="text-sm text-white/25 pt-4">Sin datos de tiempo aún · se acumulan con las visitas</p>
-        )}
-      </div>
-    </div>
-
-    <!-- Recent visits -->
+    <!-- Actividad reciente -->
     <div class="rounded-2xl border border-white/10 bg-[#0D1B2E] overflow-hidden">
       <div class="border-b border-white/10 px-6 py-4">
         <h2 class="text-xs font-bold uppercase tracking-widest text-white/40">Actividad reciente</h2>
@@ -246,9 +393,10 @@ const kpiCards = [
       <div class="overflow-x-auto">
         <table class="w-full text-sm">
           <thead>
-            <tr class="border-b border-white/5 text-xs text-white/25 uppercase tracking-widest">
+            <tr class="border-b border-white/5 text-[11px] text-white/25 uppercase tracking-widest">
               <th class="px-6 py-3 text-left">Página</th>
               <th class="px-6 py-3 text-left">Dispositivo</th>
+              <th class="px-6 py-3 text-left">País</th>
               <th class="px-6 py-3 text-left">Origen</th>
               <th class="px-6 py-3 text-left">Tiempo</th>
               <th class="px-6 py-3 text-left">Hace</th>
@@ -256,25 +404,19 @@ const kpiCards = [
           </thead>
           <tbody>
             {recent.length === 0 ? (
-              <tr>
-                <td colspan="5" class="px-6 py-10 text-center text-white/25">
-                  Sin visitas registradas aún.<br/>
-                  <span class="text-xs">Navegá el sitio para empezar a ver datos aquí.</span>
-                </td>
-              </tr>
+              <tr><td colspan="6" class="px-6 py-10 text-center text-white/25">Sin visitas registradas aún.</td></tr>
             ) : recent.map((r, i) => (
               <tr class={`border-b border-white/5 hover:bg-white/[0.03] transition-colors ${i === 0 ? 'bg-[#F26A1B]/5' : ''}`}>
                 <td class="px-6 py-3 font-semibold text-white">{fmtPage(r.page)}</td>
                 <td class="px-6 py-3">
                   <span class={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                    r.device_type === 'móvil'  ? 'bg-[#F26A1B]/15 text-[#F26A1B]' :
+                    r.device_type === 'móvil' ? 'bg-[#F26A1B]/15 text-[#F26A1B]' :
                     r.device_type === 'tablet' ? 'bg-[#E9B949]/15 text-[#E9B949]' :
-                                                  'bg-[#74ACDF]/15 text-[#74ACDF]'
+                    'bg-[#74ACDF]/15 text-[#74ACDF]'
                   }`}>{r.device_type}</span>
                 </td>
-                <td class="px-6 py-3 text-white/35 max-w-[180px] truncate">
-                  {r.referrer ? refHost(r.referrer) : <span class="text-white/15">directo</span>}
-                </td>
+                <td class="px-6 py-3 text-white/45">{countryFlag(r.country)} {countryName(r.country)}</td>
+                <td class="px-6 py-3 text-white/35 max-w-[160px] truncate">{sourceMedium(r.referrer)}</td>
                 <td class="px-6 py-3 text-white/45 font-mono text-xs">{fmtTime(r.time_on_page)}</td>
                 <td class="px-6 py-3 text-white/25 font-mono text-xs">{timeAgo(r.timestamp)}</td>
               </tr>
@@ -286,160 +428,58 @@ const kpiCards = [
 
   </main>
 
-  <!-- Chart data embedded as JSON (read by init script below) -->
   <script type="application/json" id="__chart_data__" set:html={chartJson}></script>
-
-  <!-- Chart.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js" is:inline></script>
-
-  <!-- Charts init -->
   <script is:inline>
     (function () {
       const raw = document.getElementById('__chart_data__');
       if (!raw) return;
       const cd = JSON.parse(raw.textContent || '{}');
 
-      const ORANGE  = '#F26A1B';
-      const CELESTE = '#74ACDF';
-      const GOLD    = '#E9B949';
-      const NAVY    = '#0D1B2E';
-      const GRID    = 'rgba(255,255,255,0.06)';
-      const TICK    = 'rgba(255,255,255,0.35)';
-
+      const ORANGE = '#F26A1B', CELESTE = '#74ACDF', GOLD = '#E9B949', NAVY = '#0D1B2E';
+      const GRID = 'rgba(255,255,255,0.06)', TICK = 'rgba(255,255,255,0.35)';
       Chart.defaults.color = TICK;
       Chart.defaults.font.family = 'Inter, sans-serif';
       Chart.defaults.font.size = 11;
 
-      function baseOpts(title) {
-        return {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              backgroundColor: '#0A1628',
-              borderColor: 'rgba(255,255,255,0.12)',
-              borderWidth: 1,
-              titleColor: '#fff',
-              bodyColor: 'rgba(255,255,255,0.7)',
-              padding: 10,
-            },
-          },
-          scales: {
-            x: { grid: { color: GRID }, ticks: { color: TICK } },
-            y: { grid: { color: GRID }, ticks: { color: TICK } },
-          },
-        };
-      }
+      const tooltip = {
+        backgroundColor: '#0A1628', borderColor: 'rgba(255,255,255,0.12)', borderWidth: 1,
+        titleColor: '#fff', bodyColor: 'rgba(255,255,255,0.7)', padding: 10,
+      };
 
-      // 1. Daily line chart
-      const ctxD = document.getElementById('chart-daily');
-      if (ctxD && cd.daily) {
-        new Chart(ctxD, {
+      // Nuevos vs recurrentes
+      const ctxNR = document.getElementById('chart-newret');
+      if (ctxNR && cd.daily) {
+        new Chart(ctxNR, {
           type: 'line',
           data: {
             labels: cd.daily.labels,
-            datasets: [{
-              label: 'Visitas',
-              data: cd.daily.data,
-              borderColor: ORANGE,
-              backgroundColor: 'rgba(242,106,27,0.12)',
-              pointBackgroundColor: ORANGE,
-              pointRadius: 3,
-              pointHoverRadius: 5,
-              tension: 0.4,
-              fill: true,
-            }],
+            datasets: [
+              { label: 'Nuevos', data: cd.daily.nw, borderColor: CELESTE, backgroundColor: 'rgba(116,172,223,0.10)', pointRadius: 2, tension: 0.4, fill: true },
+              { label: 'Recurrentes', data: cd.daily.rt, borderColor: GOLD, backgroundColor: 'rgba(233,185,73,0.08)', pointRadius: 2, tension: 0.4, fill: true },
+            ],
           },
-          options: baseOpts('Visitas'),
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: true, position: 'bottom', labels: { color: TICK, padding: 14, boxWidth: 10 } }, tooltip },
+            scales: { x: { grid: { color: GRID }, ticks: { color: TICK, maxTicksLimit: 12 } }, y: { grid: { color: GRID }, ticks: { color: TICK, precision: 0 }, beginAtZero: true } },
+          },
         });
       }
 
-      // 2. Top pages bar chart
-      const ctxP = document.getElementById('chart-pages');
-      if (ctxP && cd.pages) {
+      // Eventos por plataforma (doughnut)
+      const ctxP = document.getElementById('chart-platform');
+      if (ctxP && cd.platforms && cd.platforms.data.length) {
         new Chart(ctxP, {
-          type: 'bar',
-          data: {
-            labels: cd.pages.labels,
-            datasets: [{
-              label: 'Visitas',
-              data: cd.pages.data,
-              backgroundColor: cd.pages.data.map((_, i) => i === 0 ? ORANGE : 'rgba(242,106,27,0.35)'),
-              borderRadius: 6,
-            }],
-          },
-          options: { ...baseOpts('Páginas'), plugins: { ...baseOpts('Páginas').plugins, legend: { display: false } } },
-        });
-      }
-
-      // 3. Devices doughnut
-      const ctxDev = document.getElementById('chart-devices');
-      if (ctxDev && cd.devices && cd.devices.data.length) {
-        new Chart(ctxDev, {
           type: 'doughnut',
           data: {
-            labels: cd.devices.labels,
-            datasets: [{
-              data: cd.devices.data,
-              backgroundColor: [ORANGE, CELESTE, GOLD, 'rgba(255,255,255,0.2)'],
-              borderColor: NAVY,
-              borderWidth: 3,
-              hoverOffset: 6,
-            }],
+            labels: cd.platforms.labels,
+            datasets: [{ data: cd.platforms.data, backgroundColor: [ORANGE, CELESTE, GOLD, 'rgba(255,255,255,0.2)'], borderColor: NAVY, borderWidth: 3, hoverOffset: 6 }],
           },
           options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: { display: true, position: 'bottom', labels: { color: TICK, padding: 12, boxWidth: 10 } },
-              tooltip: baseOpts('').plugins.tooltip,
-            },
-            cutout: '62%',
+            responsive: true, maintainAspectRatio: false, cutout: '62%',
+            plugins: { legend: { display: true, position: 'bottom', labels: { color: TICK, padding: 12, boxWidth: 10 } }, tooltip },
           },
-        });
-      }
-
-      // 4. Referrers horizontal bar
-      const ctxR = document.getElementById('chart-refs');
-      if (ctxR && cd.refs && cd.refs.data.length) {
-        new Chart(ctxR, {
-          type: 'bar',
-          data: {
-            labels: cd.refs.labels,
-            datasets: [{
-              label: 'Visitas',
-              data: cd.refs.data,
-              backgroundColor: 'rgba(116,172,223,0.5)',
-              borderColor: CELESTE,
-              borderWidth: 1,
-              borderRadius: 4,
-            }],
-          },
-          options: {
-            ...baseOpts('Refs'),
-            indexAxis: 'y',
-          },
-        });
-      }
-
-      // 5. Time on page bar
-      const ctxT = document.getElementById('chart-time');
-      if (ctxT && cd.time && cd.time.data.length) {
-        new Chart(ctxT, {
-          type: 'bar',
-          data: {
-            labels: cd.time.labels,
-            datasets: [{
-              label: 'Segundos',
-              data: cd.time.data,
-              backgroundColor: 'rgba(233,185,73,0.45)',
-              borderColor: GOLD,
-              borderWidth: 1,
-              borderRadius: 4,
-            }],
-          },
-          options: baseOpts('Tiempo'),
         });
       }
     })();
