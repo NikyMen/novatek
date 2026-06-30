@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Package, LogOut, Tag, TrendingUp } from 'lucide-react';
+import { Plus, Package, LogOut, Tag, TrendingUp, Settings, Star, X } from 'lucide-react';
 import { ProductForm } from './ProductForm';
 import { ProductList } from './ProductList';
 import { CategoryForm } from './CategoryForm';

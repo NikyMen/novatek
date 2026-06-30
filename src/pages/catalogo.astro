@@ -14,11 +14,6 @@ const categorias = [
   { n: 'Elevables', img: '/img/categoria-elevables.png', d: 'Herrajes para sistemas elevables de grandes paños.' },
 ];
 
-const galeria = [
-  '/img/galeria-1.png', '/img/galeria-2.png', '/img/galeria-3.png',
-  '/img/galeria-4.png', '/img/galeria-5.png', '/img/galeria-6.png',
-];
-
 const marcas = [
   { n: 'Roto', img: '/img/marca-1.png' },
   { n: 'Fapim', img: '/img/marca-2.png' },
@@ -68,23 +63,6 @@ const marcas = [
               </a>
             </div>
           </article>
-        ))}
-      </div>
-    </div>
-  </section>
-
-  <!-- Kits destacados -->
-  <section class="py-16 md:py-20 bg-navy-800 border-y border-white/10">
-    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-      <div class="text-center" data-reveal>
-        <h2 class="font-display text-4xl md:text-5xl text-white">KITS Y SOLUCIONES</h2>
-        <p class="mt-3 text-white/60">Sistemas completos listos para resolver tu obra.</p>
-      </div>
-      <div class="mt-12 grid sm:grid-cols-2 gap-6" data-reveal>
-        {galeria.map((g) => (
-          <figure class="overflow-hidden rounded-2xl border border-white/10 bg-navy-900 shadow-card">
-            <img src={g} alt="Kit y solución Novatek" class="w-full h-auto" loading="lazy" />
-          </figure>
         ))}
       </div>
     </div>

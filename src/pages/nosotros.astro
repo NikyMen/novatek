@@ -39,18 +39,41 @@ const icons = {
             Trabajamos con marcas de alta calidad, stock real y procesos ágiles para acompañar cada proyecto.
           </p>
           <div id="stats-grid" class="mt-8 grid grid-cols-3 gap-4">
-            {[
-              { p: '+', n: 5, s: '', l: 'Marcas líderes' },
-              { p: '', n: 100, s: '%', l: 'Stock real' },
-              { p: '', n: 24, s: '/7', l: 'Asesoramiento' },
-            ].map((stat, i) => (
-              <div class="stat-card translate-y-4 rounded-2xl border border-white/10 bg-navy-800 p-4 text-center opacity-0 transition-all duration-700 ease-out" style={`transition-delay:${i * 120}ms`}>
-                <div class="font-display text-3xl md:text-4xl text-brand-500 tabular-nums">
-                  <span class="stat-num" data-prefix={stat.p} data-target={stat.n} data-suffix={stat.s}>{`${stat.p}0${stat.s}`}</span>
-                </div>
-                <div class="mt-1 text-xs text-white/60">{stat.l}</div>
+            <!-- Marcas líderes: contador -->
+            <div class="stat-card translate-y-4 rounded-2xl border border-white/10 bg-navy-800 p-4 text-center opacity-0 transition-all duration-700 ease-out" style="transition-delay:0ms">
+              <div class="font-display text-3xl md:text-4xl text-brand-500 tabular-nums">
+                <span class="stat-num" data-prefix="+" data-target="5" data-suffix="" data-duration="1400">+0</span>
               </div>
-            ))}
+              <div class="mt-1 text-xs text-white/60">Marcas líderes</div>
+            </div>
+
+            <!-- Stock real: círculo que carga hasta 100% -->
+            <div class="stat-card translate-y-4 rounded-2xl border border-white/10 bg-navy-800 p-4 text-center opacity-0 transition-all duration-700 ease-out" style="transition-delay:120ms">
+              <div class="relative mx-auto grid h-20 w-20 place-items-center md:h-24 md:w-24">
+                <svg class="h-full w-full -rotate-90" viewBox="0 0 100 100">
+                  <circle cx="50" cy="50" r="42" fill="none" stroke="currentColor" stroke-width="8" class="text-white/10" />
+                  <circle
+                    id="stock-ring"
+                    cx="50" cy="50" r="42" fill="none" stroke="currentColor" stroke-width="8"
+                    stroke-linecap="round"
+                    class="text-brand-500"
+                    style="stroke-dasharray:263.9; stroke-dashoffset:263.9; transition:stroke-dashoffset 1.6s cubic-bezier(0.22,1,0.36,1)"
+                  />
+                </svg>
+                <span class="absolute font-display text-xl md:text-2xl text-brand-500 tabular-nums">
+                  <span class="stat-num" data-prefix="" data-target="100" data-suffix="%" data-duration="1600">0%</span>
+                </span>
+              </div>
+              <div class="mt-2 text-xs text-white/60">Stock real</div>
+            </div>
+
+            <!-- 24/7: contador rápido -->
+            <div class="stat-card translate-y-4 rounded-2xl border border-white/10 bg-navy-800 p-4 text-center opacity-0 transition-all duration-700 ease-out" style="transition-delay:240ms">
+              <div class="font-display text-3xl md:text-4xl text-brand-500 tabular-nums">
+                <span class="stat-num" data-prefix="" data-target="24" data-suffix="/7" data-duration="700">0/7</span>
+              </div>
+              <div class="mt-1 text-xs text-white/60">Asesoramiento</div>
+            </div>
           </div>
         </div>
       </div>
@@ -129,11 +152,13 @@ const icons = {
       const cards = Array.from(grid.querySelectorAll('.stat-card'));
       const nums = Array.from(grid.querySelectorAll('.stat-num'));
 
+      const ring = document.getElementById('stock-ring');
+
       function countUp(el) {
         const target = Number(el.dataset.target) || 0;
         const prefix = el.dataset.prefix || '';
         const suffix = el.dataset.suffix || '';
-        const dur = 1400;
+        const dur = Number(el.dataset.duration) || 1400;
         const start = performance.now();
         function frame(now) {
           const t = Math.min(1, (now - start) / dur);
@@ -148,12 +173,14 @@ const icons = {
       function run() {
         cards.forEach((c) => c.classList.remove('opacity-0', 'translate-y-4'));
         nums.forEach((n) => countUp(n));
+        if (ring) ring.style.strokeDashoffset = '0';
       }
 
       const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       if (reduce) {
         cards.forEach((c) => c.classList.remove('opacity-0', 'translate-y-4'));
         nums.forEach((n) => (n.textContent = (n.dataset.prefix || '') + (n.dataset.target || '') + (n.dataset.suffix || '')));
+        if (ring) ring.style.strokeDashoffset = '0';
         return;
       }
 
