@@ -24,55 +24,31 @@ const icons = {
 ---
 
 <SiteLayout title="Nosotros · Novatek Argentina" description="En Novatek ofrecemos soluciones integrales en herrajes y accesorios para carpintería de aluminio.">
-  <!-- Hero -->
-  <section class="relative overflow-hidden bg-navy-gradient pt-32 md:pt-40 pb-20">
-    <div class="bg-pitch-glow absolute inset-0"></div>
-    <div class="field-lines absolute inset-0 opacity-40"></div>
-    <div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-      <div class="grid lg:grid-cols-2 gap-12 items-center">
-        <div data-reveal>
-          <div class="flex items-center gap-3">
-            <span class="slashes"><span></span><span></span><span></span></span>
-            <span class="text-xs font-bold uppercase tracking-widest2 text-brand-400">Sobre nosotros</span>
-          </div>
-          <h1 class="mt-5 font-display text-5xl md:text-6xl leading-[0.92] text-white">
-            ¿QUIÉN DIRIGE<br/><span class="text-brand-500">TU PROYECTO?</span>
-          </h1>
-          <p class="mt-6 max-w-xl text-white/70 leading-relaxed">
-            En <span class="font-semibold text-white">NOVATEK</span> ofrecemos soluciones integrales en herrajes
-            y accesorios para carpinterías de aluminio. Trabajamos con marcas de alta calidad, stock real y
-            procesos ágiles para acompañar cada proyecto.
-          </p>
-          <a href={WA} target="_blank" rel="noopener noreferrer" class="mt-8 inline-flex items-center gap-2 rounded-full bg-orange-gradient px-7 py-4 font-bold text-white shadow-glow transition-transform hover:scale-105">
-            Contactanos
-          </a>
-        </div>
-        <div class="relative" data-reveal style="--reveal-delay:120ms">
-          <div class="absolute -inset-3 -z-10 rounded-[2rem] bg-gradient-to-tr from-celeste/15 to-brand-500/15 blur-xl"></div>
-          <img src="/mundial/dirige-bandera.jpeg" alt="¿Quién dirige tu proyecto? — Novatek" class="w-full rounded-[2rem] border border-white/10 shadow-card" />
-        </div>
-      </div>
-    </div>
-  </section>
-
   <!-- Quiénes somos (foto arquitectura) -->
-  <section class="py-20 md:py-24">
+  <section class="pt-32 md:pt-40 pb-20 md:pb-24">
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
       <div class="grid lg:grid-cols-2 gap-12 items-center">
         <div class="relative order-2 lg:order-1" data-reveal>
           <img src="/img/nosotros-quienes-somos.png" alt="Soluciones en aluminio Novatek" class="w-full rounded-[2rem] border border-white/10 shadow-card" loading="lazy" />
         </div>
         <div class="order-1 lg:order-2" data-reveal style="--reveal-delay:120ms">
-          <h2 class="font-display text-4xl md:text-5xl text-white">PIEZAS CLAVES PARA <span class="text-brand-500">GRANDES PROYECTOS</span></h2>
+          <h2 class="font-display text-3xl md:text-4xl leading-snug text-white">
+            En <span class="text-brand-500">NOVATEK</span> ofrecemos soluciones integrales en herrajes y accesorios para carpinterías de aluminio y PVC.
+          </h2>
           <p class="mt-6 text-white/70 leading-relaxed">
-            Cada obra es un partido distinto. Por eso ponemos en cancha un catálogo amplio, marcas líderes
-            y un equipo técnico que entiende lo que tu proyecto necesita para ganar.
+            Trabajamos con marcas de alta calidad, stock real y procesos ágiles para acompañar cada proyecto.
           </p>
-          <div class="mt-8 grid grid-cols-3 gap-4">
-            {[['+5', 'Marcas líderes'], ['100%', 'Stock real'], ['24/7', 'Asesoramiento']].map(([n, l]) => (
-              <div class="rounded-2xl border border-white/10 bg-navy-800 p-4 text-center">
-                <div class="font-display text-3xl text-brand-500">{n}</div>
-                <div class="mt-1 text-xs text-white/60">{l}</div>
+          <div id="stats-grid" class="mt-8 grid grid-cols-3 gap-4">
+            {[
+              { p: '+', n: 5, s: '', l: 'Marcas líderes' },
+              { p: '', n: 100, s: '%', l: 'Stock real' },
+              { p: '', n: 24, s: '/7', l: 'Asesoramiento' },
+            ].map((stat, i) => (
+              <div class="stat-card translate-y-4 rounded-2xl border border-white/10 bg-navy-800 p-4 text-center opacity-0 transition-all duration-700 ease-out" style={`transition-delay:${i * 120}ms`}>
+                <div class="font-display text-3xl md:text-4xl text-brand-500 tabular-nums">
+                  <span class="stat-num" data-prefix={stat.p} data-target={stat.n} data-suffix={stat.s}>{`${stat.p}0${stat.s}`}</span>
+                </div>
+                <div class="mt-1 text-xs text-white/60">{stat.l}</div>
               </div>
             ))}
           </div>
@@ -85,11 +61,7 @@ const icons = {
   <section class="py-20 md:py-24 bg-navy-800 border-y border-white/10">
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
       <div class="text-center" data-reveal>
-        <div class="flex items-center justify-center gap-3">
-          <span class="slashes"><span></span><span></span><span></span></span>
-          <span class="text-xs font-bold uppercase tracking-widest2 text-brand-400">Nuestro juego</span>
-        </div>
-        <h2 class="mt-5 font-display text-4xl md:text-5xl text-white">¿QUÉ NOS DIFERENCIA?</h2>
+        <h2 class="font-display text-4xl md:text-5xl text-white">¿QUÉ NOS DIFERENCIA?</h2>
       </div>
       <div class="mt-14 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {diferenciales.map((f, i) => (
@@ -105,14 +77,31 @@ const icons = {
     </div>
   </section>
 
-  <!-- Galería diferenciales -->
+  <!-- Misión · Visión · Valores -->
   <section class="py-20 md:py-24">
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-6" data-reveal>
-        {['/img/nosotros-diferencia-1.png', '/img/nosotros-diferencia-2.png', '/img/nosotros-diferencia-3.png', '/img/home-nosotros-icono.png'].map((g) => (
-          <figure class="overflow-hidden rounded-2xl border border-white/10 shadow-card">
-            <img src={g} alt="Novatek en obra" class="aspect-[4/5] w-full object-cover transition-transform duration-500 hover:scale-105" loading="lazy" />
-          </figure>
+      <div class="grid md:grid-cols-3 gap-6">
+        {[
+          {
+            t: 'Misión',
+            d: 'Brindar soluciones integrales en herrajes y accesorios para carpintería de aluminio y PVC, con stock real, marcas líderes y asesoramiento técnico que impulse cada proyecto.',
+          },
+          {
+            t: 'Visión',
+            d: 'Ser el socio de referencia del rubro, reconocidos por la calidad de nuestros productos, la agilidad de nuestros procesos y la confianza de quienes nos eligen.',
+          },
+          {
+            t: 'Valores',
+            d: 'Calidad, compromiso, respaldo y cercanía. Trabajamos con seriedad y un equipo técnico que entiende lo que tu obra necesita para ganar.',
+          },
+        ].map((item, i) => (
+          <div class="group rounded-3xl border border-white/10 bg-navy-800 p-8 shadow-card transition-colors hover:border-brand-500/50" data-reveal style={`--reveal-delay:${i * 90}ms`}>
+            <div class="flex items-center gap-3">
+              <span class="slashes"><span></span><span></span><span></span></span>
+              <h3 class="font-display text-2xl tracking-wide text-white">{item.t.toUpperCase()}</h3>
+            </div>
+            <p class="mt-4 text-white/70 leading-relaxed">{item.d}</p>
+          </div>
         ))}
       </div>
     </div>
@@ -132,4 +121,51 @@ const icons = {
       </div>
     </div>
   </section>
+
+  <script is:inline>
+    (function () {
+      const grid = document.getElementById('stats-grid');
+      if (!grid) return;
+      const cards = Array.from(grid.querySelectorAll('.stat-card'));
+      const nums = Array.from(grid.querySelectorAll('.stat-num'));
+
+      function countUp(el) {
+        const target = Number(el.dataset.target) || 0;
+        const prefix = el.dataset.prefix || '';
+        const suffix = el.dataset.suffix || '';
+        const dur = 1400;
+        const start = performance.now();
+        function frame(now) {
+          const t = Math.min(1, (now - start) / dur);
+          const eased = 1 - Math.pow(1 - t, 3); // easeOutCubic
+          el.textContent = prefix + Math.round(eased * target) + suffix;
+          if (t < 1) requestAnimationFrame(frame);
+          else el.textContent = prefix + target + suffix;
+        }
+        requestAnimationFrame(frame);
+      }
+
+      function run() {
+        cards.forEach((c) => c.classList.remove('opacity-0', 'translate-y-4'));
+        nums.forEach((n) => countUp(n));
+      }
+
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (reduce) {
+        cards.forEach((c) => c.classList.remove('opacity-0', 'translate-y-4'));
+        nums.forEach((n) => (n.textContent = (n.dataset.prefix || '') + (n.dataset.target || '') + (n.dataset.suffix || '')));
+        return;
+      }
+
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            run();
+            io.disconnect();
+          }
+        });
+      }, { threshold: 0.4 });
+      io.observe(grid);
+    })();
+  </script>
 </SiteLayout>

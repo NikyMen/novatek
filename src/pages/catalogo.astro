@@ -36,9 +36,9 @@ const marcas = [
     <div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center" data-reveal>
       <div class="flex items-center justify-center gap-3">
         <span class="slashes"><span></span><span></span><span></span></span>
-        <span class="text-xs font-bold uppercase tracking-widest2 text-brand-400">Catálogo</span>
+        <span class="text-xs font-bold uppercase tracking-widest2 text-brand-400">Herrajes para aluminio y PVC</span>
       </div>
-      <h1 class="mt-5 font-display text-5xl md:text-6xl text-white">EL PLANTEL COMPLETO</h1>
+      <h1 class="mt-5 font-display text-6xl md:text-8xl text-white">CATÁLOGO</h1>
       <p class="mx-auto mt-4 max-w-2xl text-white/65">
         Calidad, precisión y disponibilidad inmediata. Explorá nuestras categorías y consultá
         stock y precios con nuestro equipo.
@@ -98,8 +98,8 @@ const marcas = [
       </div>
       <div class="mt-10 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-5" data-reveal>
         {marcas.map((m) => (
-          <div class="grid place-items-center rounded-2xl border border-white/10 bg-white px-6 py-8 transition-transform hover:-translate-y-1">
-            <img src={m.img} alt={m.n} class="h-11 w-auto object-contain" loading="lazy" />
+          <div class="grid place-items-center rounded-2xl border border-white/10 bg-white px-3 py-4 transition-transform hover:-translate-y-1">
+            <img src={m.img} alt={m.n} class="h-20 md:h-24 w-full object-contain" loading="lazy" />
           </div>
         ))}
       </div>

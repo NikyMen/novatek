@@ -4,13 +4,6 @@ import SiteLayout from '../layouts/SiteLayout.astro';
 
 const WA = 'https://wa.link/fo0jrt';
 
-const valores = [
-  { t: 'Calidad', d: 'Marcas líderes seleccionadas' },
-  { t: 'Precisión', d: 'Componentes que encajan' },
-  { t: 'Respaldo', d: 'Soporte e instalación' },
-  { t: 'Durabilidad', d: 'Piezas que aguantan los 90′' },
-];
-
 const categorias = [
   { n: 'Escuadras', img: '/img/categoria-escuadras.png' },
   { n: 'Manijas', img: '/img/categoria-manijas.png' },
@@ -29,16 +22,18 @@ const marcas = [
   { n: 'Giesse', img: '/img/marca-5.png' },
 ];
 
-const galeria = [
-  '/img/galeria-1.png', '/img/galeria-2.png', '/img/galeria-3.png',
-  '/img/galeria-4.png', '/img/galeria-5.png', '/img/galeria-6.png',
-];
-
 const campana = [
   { img: '/mundial/equipo-ganador.jpeg', t: 'Un equipo ganador no se improvisa' },
   { img: '/mundial/dirige-bandera.jpeg', t: '¿Quién dirige tu proyecto?' },
   { img: '/mundial/dirige-obra.jpeg', t: 'El DT de tu obra' },
   { img: '/mundial/levanta-copa.jpeg', t: '¿Quién levanta la copa?' },
+];
+
+const carrusel = [
+  '/carrusel/carrusel-1.jpeg',
+  '/carrusel/carrusel-2.jpeg',
+  '/carrusel/carrusel-3.jpeg',
+  '/carrusel/carrusel-4.jpeg',
 ];
 ---
 
@@ -55,21 +50,14 @@ const campana = [
       <div class="grid lg:grid-cols-2 gap-12 lg:gap-8 items-center">
         <!-- Texto -->
         <div data-reveal>
-          <div class="inline-flex items-center gap-3 rounded-full border border-brand-500/30 bg-brand-500/10 px-4 py-1.5">
-            <span class="slashes"><span></span><span></span><span></span></span>
-            <span class="text-xs font-bold uppercase tracking-widest2 text-brand-300">Edición Mundial 2026</span>
-          </div>
-
-          <h1 class="mt-6 font-display text-5xl sm:text-6xl xl:text-7xl leading-[0.92] tracking-tight text-white">
+          <h1 class="font-display text-5xl sm:text-6xl xl:text-7xl leading-[0.92] tracking-tight text-white">
             PIEZAS CLAVES<br />
             PARA <span class="text-brand-500">GRANDES</span><br />
             PROYECTOS
           </h1>
 
           <p class="mt-6 max-w-xl text-base md:text-lg leading-relaxed text-white/70">
-            Así como una selección necesita jugadores de primer nivel, una obra necesita
-            <span class="font-semibold text-white">componentes que estén a la altura</span>.
-            Accesorios y herrajes para aluminio con stock real y marcas líderes.
+            <mark class="rounded-md bg-brand-500/90 px-2 py-0.5 font-semibold text-white">Accesorios y herrajes para aluminio y PVC</mark>
           </p>
 
           <div class="mt-8 flex flex-wrap items-center gap-4">
@@ -81,25 +69,13 @@ const campana = [
               Contactanos
             </a>
           </div>
-
-          <!-- mini valores -->
-          <div class="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-xl">
-            {valores.map((v) => (
-              <div class="flex items-center gap-2.5">
-                <span class="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-brand-500/15 text-brand-400">
-                  <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                </span>
-                <span class="text-sm font-bold uppercase tracking-wide text-white/90">{v.t}</span>
-              </div>
-            ))}
-          </div>
         </div>
 
         <!-- Imagen campaña -->
         <div class="relative" data-reveal style="--reveal-delay:150ms">
           <div class="absolute inset-0 -z-10 translate-x-6 translate-y-6 rounded-[2rem] bg-brand-500/20 blur-2xl"></div>
           <div class="relative rotate-2 overflow-hidden rounded-[2rem] border border-white/10 shadow-card transition-transform duration-500 hover:rotate-0">
-            <img src="/mundial/equipo-ganador.jpeg" alt="Un equipo ganador no se improvisa — Novatek" class="w-full h-auto" loading="eager" />
+            <img src="/home1.jpeg" alt="Novatek" class="w-full h-auto" loading="eager" />
           </div>
           <div class="absolute -bottom-5 -left-5 hidden sm:flex items-center gap-3 rounded-2xl border border-white/10 bg-navy-800/90 px-5 py-3 shadow-card backdrop-blur">
             <span class="font-display text-3xl text-brand-500">+5</span>
@@ -135,7 +111,7 @@ const campana = [
       <div class="grid lg:grid-cols-2 gap-12 items-center">
         <div class="relative order-2 lg:order-1" data-reveal>
           <div class="absolute -inset-3 -z-10 rounded-[2rem] bg-gradient-to-tr from-brand-500/20 to-celeste/10 blur-xl"></div>
-          <img src="/mundial/dirige-obra.jpeg" alt="¿Quién dirige tu proyecto? — Novatek" class="w-full rounded-[2rem] border border-white/10 shadow-card" loading="lazy" />
+          <img src="/nuevosmodelosbase/mdf1.jpeg" alt="¿Quién dirige tu proyecto? — Novatek" class="w-full rounded-[2rem] border border-white/10 shadow-card" loading="lazy" />
         </div>
 
         <div class="order-1 lg:order-2" data-reveal style="--reveal-delay:120ms">
@@ -147,12 +123,6 @@ const campana = [
             EN EL FÚTBOL HAY UN <span class="text-brand-500">DT</span>.<br />
             EN TU OBRA, ESTAMOS NOSOTROS.
           </h2>
-          <p class="mt-6 text-white/70 leading-relaxed">
-            En <span class="font-semibold text-white">NOVATEK</span> ofrecemos soluciones integrales en herrajes
-            y accesorios para carpinterías de aluminio. Trabajamos con marcas de alta calidad, stock real
-            y procesos ágiles para acompañar cada proyecto, de principio a fin.
-          </p>
-
           <ul class="mt-8 space-y-4">
             {[
               ['Elegir el sistema correcto', 'Te ayudamos a definir la solución técnica ideal.'],
@@ -189,8 +159,7 @@ const campana = [
           <span class="slashes"><span></span><span></span><span></span></span>
           <span class="text-xs font-bold uppercase tracking-widest2 text-brand-400">Nuestro plantel</span>
         </div>
-        <h2 class="mt-5 font-display text-4xl md:text-5xl text-white">EL PLANTEL COMPLETO</h2>
-        <p class="mt-4 text-white/65">Cada categoría es un titular. Explorá las piezas que arman tu proyecto.</p>
+        <h2 class="mt-5 font-display text-4xl md:text-5xl text-white">Catalogo</h2>
       </div>
 
       <div class="mt-14 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
@@ -214,30 +183,6 @@ const campana = [
           </span>
           <span class="font-display text-xl text-white">VER TODO<br/>EL CATÁLOGO</span>
         </a>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============ KITS / GALERÍA DESTACADA (banners) ============ -->
-  <section class="py-20 md:py-28">
-    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-      <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4" data-reveal>
-        <div>
-          <div class="flex items-center gap-3">
-            <span class="slashes"><span></span><span></span><span></span></span>
-            <span class="text-xs font-bold uppercase tracking-widest2 text-brand-400">Jugadas destacadas</span>
-          </div>
-          <h2 class="mt-5 font-display text-4xl md:text-5xl text-white">KITS Y SOLUCIONES</h2>
-        </div>
-        <p class="max-w-md text-white/60">Combinaciones listas para resolver tu obra: multipuntos, cremonas y sistemas completos.</p>
-      </div>
-
-      <div class="mt-12 -mx-4 px-4 flex snap-x snap-mandatory gap-6 overflow-x-auto pb-4 scrollbar-thin" data-reveal>
-        {galeria.map((g) => (
-          <figure class="snap-start shrink-0 w-[85%] sm:w-[60%] lg:w-[46%] overflow-hidden rounded-2xl border border-white/10 bg-navy-800 shadow-card">
-            <img src={g} alt="Kit y solución Novatek" class="w-full h-auto" loading="lazy" />
-          </figure>
-        ))}
       </div>
     </div>
   </section>
@@ -274,7 +219,7 @@ const campana = [
 
         <div class="relative" data-reveal style="--reveal-delay:120ms">
           <div class="absolute inset-0 -z-10 scale-90 rounded-full bg-gold/20 blur-3xl"></div>
-          <img src="/mundial/levanta-copa.jpeg" alt="¿Quién levanta la copa? — Novatek" class="w-full rounded-[2rem] border border-white/10 shadow-card" loading="lazy" />
+          <img src="/novedades/mdf2.jpeg" alt="¿Quién levanta la copa? — Novatek" class="w-full rounded-[2rem] border border-white/10 shadow-card" loading="lazy" />
         </div>
       </div>
     </div>
@@ -289,71 +234,82 @@ const campana = [
       </div>
       <div class="mt-12 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-5" data-reveal>
         {marcas.map((m) => (
-          <div class="group grid place-items-center rounded-2xl border border-white/10 bg-white px-6 py-8 transition-transform hover:-translate-y-1">
-            <img src={m.img} alt={m.n} class="h-12 w-auto object-contain opacity-90 transition group-hover:opacity-100" loading="lazy" />
+          <div class="group grid place-items-center rounded-2xl border border-white/10 bg-white px-2 py-3 transition-transform hover:-translate-y-1">
+            <img src={m.img} alt={m.n} class="h-28 md:h-32 w-full object-contain opacity-90 transition group-hover:opacity-100" loading="lazy" />
           </div>
         ))}
       </div>
     </div>
   </section>
 
-  <!-- ============ CAMPAÑA MUNDIAL 2026 ============ -->
-  <section class="relative overflow-hidden py-20 md:py-28 bg-navy-gradient border-y border-white/10">
-    <div class="bg-pitch-glow absolute inset-0"></div>
-    <div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-2xl text-center" data-reveal>
-        <div class="flex items-center justify-center gap-3">
-          <span class="slashes"><span></span><span></span><span></span></span>
-          <span class="text-xs font-bold uppercase tracking-widest2 text-brand-400">Campaña</span>
-        </div>
-        <h2 class="mt-5 font-display text-4xl md:text-5xl text-white">RUMBO AL MUNDIAL 2026</h2>
-        <p class="mt-4 text-white/65">Una campaña que une la pasión del fútbol con la precisión de cada pieza.</p>
-      </div>
-
-      <div class="mt-14 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        {campana.map((c, i) => (
-          <figure class="group relative overflow-hidden rounded-2xl border border-white/10 shadow-card" data-reveal style={`--reveal-delay:${i * 80}ms`}>
-            <img src={c.img} alt={c.t} class="aspect-square w-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
-            <figcaption class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-navy-950 to-transparent p-4 pt-10">
-              <span class="text-sm font-bold text-white">{c.t}</span>
-            </figcaption>
-          </figure>
-        ))}
-      </div>
-    </div>
-  </section>
-
-  <!-- ============ TEASER NOVEDADES ============ -->
+  <!-- ============ CARRUSEL ============ -->
   <section class="relative overflow-hidden py-20 md:py-28">
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-      <div class="relative overflow-hidden rounded-[2.5rem] border border-brand-500/20 bg-navy-800 shadow-card" data-reveal>
-        <div class="grid lg:grid-cols-2 items-center">
-          <div class="p-8 sm:p-12 lg:p-16">
-            <span class="inline-flex items-center gap-2 rounded-full bg-brand-500/15 px-4 py-1.5 text-xs font-bold uppercase tracking-widest2 text-brand-300 ring-1 ring-brand-500/30">
-              <span class="relative flex h-2 w-2">
-                <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand-400 opacity-75"></span>
-                <span class="relative inline-flex h-2 w-2 rounded-full bg-brand-500"></span>
-              </span>
-              Muy pronto
-            </span>
-            <h2 class="mt-6 font-display text-4xl md:text-5xl leading-[0.95] text-white">
-              ALGO GRANDE<br/><span class="text-brand-500">ESTÁ POR LLEGAR</span>
-            </h2>
-            <p class="mt-5 max-w-md text-white/70">
-              Estamos trabajando en una alianza que va a marcar un antes y un después.
-              Más tecnología, más respaldo y más oportunidades para tus proyectos.
-            </p>
-            <a href="/novedades" class="mt-8 inline-flex items-center gap-2 rounded-full bg-orange-gradient px-7 py-4 font-bold text-white shadow-glow transition-transform hover:scale-105">
-              Descubrir qué se viene
-              <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </a>
-          </div>
-          <div class="relative h-full min-h-[300px]">
-            <img src="/novedades-teaser/algo-grande.jpeg" alt="Algo grande está por llegar — Novatek" class="absolute inset-0 h-full w-full object-cover" loading="lazy" />
-            <div class="absolute inset-0 bg-gradient-to-r from-navy-800 via-navy-800/30 to-transparent lg:from-navy-800 lg:via-transparent"></div>
-          </div>
+      <div id="carrusel" class="relative overflow-hidden rounded-[2.5rem] border border-brand-500/20 bg-navy-800 shadow-card" data-reveal>
+        <!-- Slides -->
+        <div id="carrusel-track" class="flex transition-transform duration-700 ease-out">
+          {carrusel.map((img, i) => (
+            <div class="relative w-full shrink-0">
+              <img src={img} alt={`Novatek — imagen ${i + 1}`} class="aspect-[16/9] w-full bg-navy-900 object-contain" loading={i === 0 ? 'eager' : 'lazy'} />
+            </div>
+          ))}
+        </div>
+
+        <!-- Flechas -->
+        <button id="carrusel-prev" aria-label="Anterior"
+          class="absolute left-4 top-1/2 -translate-y-1/2 grid h-11 w-11 place-items-center rounded-full bg-navy-900/70 text-white ring-1 ring-white/15 backdrop-blur transition hover:bg-brand-500">
+          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <button id="carrusel-next" aria-label="Siguiente"
+          class="absolute right-4 top-1/2 -translate-y-1/2 grid h-11 w-11 place-items-center rounded-full bg-navy-900/70 text-white ring-1 ring-white/15 backdrop-blur transition hover:bg-brand-500">
+          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+
+        <!-- Indicadores -->
+        <div id="carrusel-dots" class="absolute inset-x-0 bottom-5 flex items-center justify-center gap-2.5">
+          {carrusel.map((_, i) => (
+            <button data-idx={i} aria-label={`Ir a la imagen ${i + 1}`}
+              class="carrusel-dot h-2.5 w-2.5 rounded-full bg-white/40 transition-all hover:bg-white/70"></button>
+          ))}
         </div>
       </div>
     </div>
   </section>
+
+  <script is:inline>
+    (function () {
+      const root = document.getElementById('carrusel');
+      if (!root) return;
+      const track = document.getElementById('carrusel-track');
+      const dots = Array.from(root.querySelectorAll('.carrusel-dot'));
+      const total = dots.length;
+      let idx = 0;
+      let timer;
+
+      function render() {
+        track.style.transform = `translateX(-${idx * 100}%)`;
+        dots.forEach((d, i) => {
+          const on = i === idx;
+          d.classList.toggle('bg-brand-500', on);
+          d.classList.toggle('w-6', on);
+          d.classList.toggle('bg-white/40', !on);
+        });
+      }
+      function go(n) { idx = (n + total) % total; render(); }
+      function next() { go(idx + 1); }
+      function prev() { go(idx - 1); }
+
+      function play() { stop(); timer = setInterval(next, 5000); }
+      function stop() { if (timer) clearInterval(timer); }
+
+      document.getElementById('carrusel-next')?.addEventListener('click', () => { next(); play(); });
+      document.getElementById('carrusel-prev')?.addEventListener('click', () => { prev(); play(); });
+      dots.forEach((d) => d.addEventListener('click', () => { go(Number(d.dataset.idx)); play(); }));
+      root.addEventListener('mouseenter', stop);
+      root.addEventListener('mouseleave', play);
+
+      render();
+      play();
+    })();
+  </script>
 </SiteLayout>

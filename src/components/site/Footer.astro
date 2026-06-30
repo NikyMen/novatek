@@ -1,6 +1,4 @@
 ---
-import BrandMark from './BrandMark.astro';
-
 const WA = 'https://wa.link/fo0jrt';
 const EMAIL = 'administracion@novatekargentina.com.ar';
 const PHONE = '+54 11 7940 2001';
@@ -13,7 +11,7 @@ const PHONE = '+54 11 7940 2001';
   <div class="relative border-b border-white/10 bg-gradient-to-r from-brand-600 via-brand-500 to-brand-600">
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-7 flex flex-col md:flex-row items-center justify-between gap-5 text-center md:text-left">
       <p class="font-display text-2xl md:text-3xl tracking-wide text-white">
-        CONECTATE CON NUESTRO EQUIPO Y JUGÁ EN PRIMERA
+        CONTACTANOS
       </p>
       <a
         href={WA}
@@ -31,15 +29,7 @@ const PHONE = '+54 11 7940 2001';
     <div class="grid grid-cols-1 md:grid-cols-12 gap-10">
       <!-- Brand -->
       <div class="md:col-span-5">
-        <div class="flex items-center gap-3 text-white">
-          <BrandMark class="h-11 w-11" />
-          <div class="leading-none">
-            <div class="font-display text-2xl tracking-wide">NOVATEK</div>
-            <div class="text-[10px] uppercase tracking-widest2 text-brand-400 font-semibold">
-              Piezas claves para grandes proyectos
-            </div>
-          </div>
-        </div>
+        <img src="/Logo-blanco.png" alt="Novatek" class="h-12 md:h-14 w-auto object-contain" />
         <p class="mt-5 max-w-sm text-sm leading-relaxed text-white/60">
           Soluciones integrales en herrajes y accesorios para carpintería de aluminio.
           Marcas líderes, stock real y procesos ágiles para acompañar cada proyecto.
