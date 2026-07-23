@@ -2,6 +2,7 @@
 import Layout from '../../layouts/Layout.astro';
 import { isAuthenticated } from '../../lib/auth';
 import { sourceMedium, countryName, countryFlag } from '../../lib/analytics';
+import { db } from '../../lib/database';
 
 // Protección: sin sesión válida → al login
 if (!isAuthenticated(Astro.cookies)) {
@@ -186,6 +187,13 @@ const chartJson = JSON.stringify({
 });
 
 const updatedAt = new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+
+let novedadesLeads: Array<{ id: number; fullName: string; email: string; phone: string; createdAt: string | Date }> = [];
+try {
+  novedadesLeads = await db.novedades.getAll();
+} catch (e) {
+  console.error('Error al cargar contactos de novedades:', e);
+}
 
 const kpiCards = [
   { label: 'Usuarios activos', val: kpi.activeUsers.toLocaleString('es-AR'), color: 'text-[#F26A1B]' },
@@ -384,6 +392,41 @@ const ranges = [{ d: 7, l: '7 días' }, { d: 30, l: '30 días' }, { d: 90, l: '9
         </ul>
       </div>
     </div>
+
+    <!-- Contactos de novedades -->
+    <section class="rounded-2xl border border-white/10 bg-[#0D1B2E] overflow-hidden">
+      <div class="flex items-center justify-between border-b border-white/10 px-6 py-4">
+        <div>
+          <h2 class="text-xs font-bold uppercase tracking-widest text-white/40">Contactos de novedades</h2>
+          <p class="mt-1 text-xs text-white/30">Personas que solicitaron que las contactemos.</p>
+        </div>
+        <span class="rounded-full bg-[#F26A1B]/15 px-3 py-1 text-xs font-semibold text-[#F26A1B]">{novedadesLeads.length}</span>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-white/5 text-[11px] text-white/25 uppercase tracking-widest">
+              <th class="px-6 py-3 text-left">Nombre y apellido</th>
+              <th class="px-6 py-3 text-left">Correo</th>
+              <th class="px-6 py-3 text-left">Telefono</th>
+              <th class="px-6 py-3 text-left">Fecha</th>
+            </tr>
+          </thead>
+          <tbody>
+            {novedadesLeads.length === 0 ? (
+              <tr><td colspan="4" class="px-6 py-10 text-center text-white/25">Todavia no hay contactos registrados.</td></tr>
+            ) : novedadesLeads.map(lead => (
+              <tr class="border-b border-white/5 hover:bg-white/[0.03] transition-colors">
+                <td class="px-6 py-3 font-semibold text-white">{lead.fullName}</td>
+                <td class="px-6 py-3 text-white/70">{lead.email}</td>
+                <td class="px-6 py-3 text-white/70">{lead.phone}</td>
+                <td class="px-6 py-3 text-white/45">{new Date(lead.createdAt).toLocaleString('es-AR')}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
 
     <!-- Actividad reciente -->
     <div class="rounded-2xl border border-white/10 bg-[#0D1B2E] overflow-hidden">

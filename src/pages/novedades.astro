@@ -135,20 +135,71 @@ const pilares = [
     </div>
   </section>
 
-  <!-- CTA FINAL -->
+  <!-- FORMULARIO DE NOVEDADES -->
   <section class="pb-24">
-    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-      <div class="relative overflow-hidden rounded-[2.5rem] bg-orange-gradient px-8 py-16 text-center shadow-glow" data-reveal>
+    <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+      <div class="relative overflow-hidden rounded-[2.5rem] bg-orange-gradient px-8 py-12 md:px-12 md:py-16 shadow-glow" data-reveal>
         <div class="field-lines absolute inset-0 opacity-30"></div>
-        <h2 class="relative font-display text-4xl md:text-6xl leading-[0.95] text-white">MUY PRONTO<br/>TE CONTAMOS MÁS</h2>
-        <p class="relative mx-auto mt-4 max-w-xl text-white/90">Dejanos tu mensaje y sé de los primeros en enterarte de la gran novedad.</p>
-        <a href={WA} target="_blank" rel="noopener noreferrer" class="relative mt-8 inline-flex items-center gap-2 rounded-full bg-navy-900 px-8 py-4 font-bold text-white transition-transform hover:scale-105">
-          Avisame cuando llegue
-          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </a>
+        <div class="relative">
+          <h2 class="font-display text-4xl md:text-5xl leading-[0.95] text-white">CONTACTANOS</h2>
+          <p class="mt-4 max-w-xl text-white/90">Dejanos tus datos y te contactamos para contarte todas las novedades.</p>
+          <form id="novedades-lead-form" class="mt-8 grid gap-4 sm:grid-cols-2">
+            <div class="sm:col-span-2">
+              <label for="lead-nombre" class="block text-xs font-bold uppercase tracking-wide text-white/80">Nombre y apellido</label>
+              <input id="lead-nombre" name="nombreApellido" type="text" required autocomplete="name" placeholder="Tu nombre y apellido"
+                class="mt-2 w-full rounded-xl border border-white/20 bg-navy-900/80 px-4 py-3 text-white placeholder-white/40 outline-none transition focus:border-white focus:ring-2 focus:ring-white/30" />
+            </div>
+            <div>
+              <label for="lead-correo" class="block text-xs font-bold uppercase tracking-wide text-white/80">Correo</label>
+              <input id="lead-correo" name="correo" type="email" required autocomplete="email" placeholder="tu@correo.com"
+                class="mt-2 w-full rounded-xl border border-white/20 bg-navy-900/80 px-4 py-3 text-white placeholder-white/40 outline-none transition focus:border-white focus:ring-2 focus:ring-white/30" />
+            </div>
+            <div>
+              <label for="lead-telefono" class="block text-xs font-bold uppercase tracking-wide text-white/80">Telefono</label>
+              <input id="lead-telefono" name="telefono" type="tel" required autocomplete="tel" placeholder="Tu telefono"
+                class="mt-2 w-full rounded-xl border border-white/20 bg-navy-900/80 px-4 py-3 text-white placeholder-white/40 outline-none transition focus:border-white focus:ring-2 focus:ring-white/30" />
+            </div>
+            <div class="sm:col-span-2 flex flex-wrap items-center gap-4 pt-2">
+              <button type="submit" class="inline-flex items-center gap-2 rounded-full bg-navy-900 px-8 py-4 font-bold text-white transition-transform hover:scale-105 disabled:cursor-not-allowed disabled:opacity-60">
+                Quiero que me contacten
+                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <p id="novedades-lead-status" class="text-sm text-white/90" role="status" aria-live="polite"></p>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   </section>
+
+  <script is:inline>
+    (() => {
+      const form = document.getElementById('novedades-lead-form');
+      const status = document.getElementById('novedades-lead-status');
+      if (!form || !status) return;
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const button = form.querySelector('button[type="submit"]');
+        if (button) button.disabled = true;
+        status.textContent = 'Enviando...';
+        try {
+          const response = await fetch('/api/novedades-leads', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(Object.fromEntries(new FormData(form))),
+          });
+          const result = await response.json();
+          if (!response.ok) throw new Error(result.error || 'No pudimos guardar tus datos.');
+          form.reset();
+          status.textContent = 'Listo, te contactaremos pronto.';
+        } catch (error) {
+          status.textContent = error instanceof Error ? error.message : 'Ocurrio un error. Intenta nuevamente.';
+        } finally {
+          if (button) button.disabled = false;
+        }
+      });
+    })();
+  </script>
 
   <script is:inline define:vars={{ TARGET }}>
     (function () {
