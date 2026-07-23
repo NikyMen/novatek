@@ -1,8 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import { isAuthenticated } from '../../lib/auth';
-import { sourceMedium, countryName, countryFlag } from '../../lib/analytics';
-import { db } from '../../lib/database';
+import { sourceMedium, countryName, countryFlag, getNovedadesLeads } from '../../lib/analytics';
 
 // Protección: sin sesión válida → al login
 if (!isAuthenticated(Astro.cookies)) {
@@ -188,9 +187,9 @@ const chartJson = JSON.stringify({
 
 const updatedAt = new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
 
-let novedadesLeads: Array<{ id: number; fullName: string; email: string; phone: string; createdAt: string | Date }> = [];
+let novedadesLeads: Array<{ id: number; fullName: string; email: string; phone: string; createdAt: number }> = [];
 try {
-  novedadesLeads = await db.novedades.getAll();
+  novedadesLeads = getNovedadesLeads();
 } catch (e) {
   console.error('Error al cargar contactos de novedades:', e);
 }

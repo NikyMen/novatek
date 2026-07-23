@@ -35,10 +35,64 @@ export function getDb(): Database.Database {
     CREATE INDEX IF NOT EXISTS idx_ts  ON pageviews(timestamp);
     CREATE INDEX IF NOT EXISTS idx_pg  ON pageviews(page);
     CREATE INDEX IF NOT EXISTS idx_vid ON pageviews(view_id);
+
+    CREATE TABLE IF NOT EXISTS novedades_leads (
+      id         INTEGER PRIMARY KEY AUTOINCREMENT,
+      full_name  TEXT NOT NULL,
+      email      TEXT NOT NULL,
+      phone      TEXT NOT NULL,
+      created_at INTEGER NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS idx_novedades_leads_created_at
+      ON novedades_leads(created_at);
   `);
   // Migración: agregar columna country a bases existentes (ignora error si ya existe)
   try { _db.exec('ALTER TABLE pageviews ADD COLUMN country TEXT'); } catch (_) {}
   return _db;
+}
+
+export type NovedadesLead = {
+  id: number;
+  fullName: string;
+  email: string;
+  phone: string;
+  createdAt: number;
+};
+
+export function createNovedadesLead(lead: Omit<NovedadesLead, 'id' | 'createdAt'>): NovedadesLead {
+  const createdAt = Date.now();
+  const result = getDb().prepare(`
+    INSERT INTO novedades_leads (full_name, email, phone, created_at)
+    VALUES (?, ?, ?, ?)
+  `).run(lead.fullName, lead.email, lead.phone, createdAt);
+
+  return {
+    id: Number(result.lastInsertRowid),
+    ...lead,
+    createdAt,
+  };
+}
+
+export function getNovedadesLeads(): NovedadesLead[] {
+  const rows = getDb().prepare(`
+    SELECT id, full_name, email, phone, created_at
+    FROM novedades_leads
+    ORDER BY created_at DESC
+  `).all() as Array<{
+    id: number;
+    full_name: string;
+    email: string;
+    phone: string;
+    created_at: number;
+  }>;
+
+  return rows.map(row => ({
+    id: row.id,
+    fullName: row.full_name,
+    email: row.email,
+    phone: row.phone,
+    createdAt: row.created_at,
+  }));
 }
 
 export function hashIp(ip: string): string {

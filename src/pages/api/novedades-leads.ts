@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
-import { db } from '../../lib/database';
 import { isAuthenticated } from '../../lib/auth';
+import { createNovedadesLead, getNovedadesLeads } from '../../lib/analytics';
 
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), {
   status,
@@ -24,7 +24,7 @@ export const POST: APIRoute = async ({ request }) => {
       return json({ error: 'Ingresá un correo válido.' }, 400);
     }
 
-    const lead = await db.novedades.create({ fullName, email, phone });
+    const lead = createNovedadesLead({ fullName, email, phone });
     return json(lead, 201);
   } catch (error) {
     console.error('Error al guardar contacto de novedades:', error);
@@ -36,7 +36,7 @@ export const GET: APIRoute = async ({ cookies }) => {
   if (!isAuthenticated(cookies)) return json({ error: 'No autorizado' }, 401);
 
   try {
-    return json(await db.novedades.getAll());
+    return json(getNovedadesLeads());
   } catch (error) {
     console.error('Error al obtener contactos de novedades:', error);
     return json({ error: 'Error al obtener contactos.' }, 500);

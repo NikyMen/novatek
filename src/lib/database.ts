@@ -8,22 +8,9 @@ const sql = neon(process.env.DATABASE_URL!);
 
 export { sql };
 
-export async function ensureNovedadesLeadsTable() {
-  await sql`
-    CREATE TABLE IF NOT EXISTS novedades_leads (
-      id SERIAL PRIMARY KEY,
-      full_name VARCHAR(255) NOT NULL,
-      email VARCHAR(255) NOT NULL,
-      phone VARCHAR(80) NOT NULL,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )
-  `;
-}
-
 // Función para inicializar la base de datos
 export async function initDatabase() {
   try {
-    await ensureNovedadesLeadsTable();
     // Crear tabla de categorías
     await sql`
       CREATE TABLE IF NOT EXISTS categories (
@@ -351,41 +338,6 @@ export const db = {
     }
   },
   
-  novedades: {
-    create: async (lead: { fullName: string; email: string; phone: string }) => {
-      await ensureNovedadesLeadsTable();
-      const result = await sql`
-        INSERT INTO novedades_leads (full_name, email, phone)
-        VALUES (${lead.fullName}, ${lead.email}, ${lead.phone})
-        RETURNING id, full_name, email, phone, created_at
-      `;
-      const row = result[0];
-      return {
-        id: row.id,
-        fullName: row.full_name,
-        email: row.email,
-        phone: row.phone,
-        createdAt: row.created_at,
-      };
-    },
-
-    getAll: async () => {
-      await ensureNovedadesLeadsTable();
-      const rows = await sql`
-        SELECT id, full_name, email, phone, created_at
-        FROM novedades_leads
-        ORDER BY created_at DESC
-      `;
-      return rows.map(row => ({
-        id: row.id,
-        fullName: row.full_name,
-        email: row.email,
-        phone: row.phone,
-        createdAt: row.created_at,
-      }));
-    },
-  },
-
   categories: {
     getAll: async () => {
       const rows = await sql`SELECT * FROM categories ORDER BY name`;
