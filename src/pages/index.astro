@@ -109,43 +109,10 @@ const carrusel = [
   <!-- ============ NOSOTROS / DT ============ -->
   <section class="relative overflow-hidden py-20 md:py-28">
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-      <div class="grid lg:grid-cols-2 gap-12 items-center">
-        <div class="relative order-2 lg:order-1" data-reveal>
+      <div>
+        <div class="relative" data-reveal>
           <div class="absolute -inset-3 -z-10 rounded-[2rem] bg-gradient-to-tr from-brand-500/20 to-celeste/10 blur-xl"></div>
           <img src="/mundial/dirige-bandera.jpeg" alt="¿Quién dirige tu proyecto? — Novatek" class="w-full rounded-[2rem] border border-white/10 shadow-card" loading="lazy" />
-        </div>
-
-        <div class="order-1 lg:order-2" data-reveal style="--reveal-delay:120ms">
-          <div class="flex items-center gap-3">
-            <span class="slashes"><span></span><span></span><span></span></span>
-            <span class="text-xs font-bold uppercase tracking-widest2 text-brand-400">Sobre Novatek</span>
-          </div>
-          <h2 class="mt-5 font-display text-4xl md:text-5xl leading-[0.95] text-white">
-            EN EL FÚTBOL HAY UN <span class="text-brand-500">DT</span>.<br />
-            EN TU OBRA, ESTAMOS NOSOTROS.
-          </h2>
-          <ul class="mt-8 space-y-4">
-            {[
-              ['Elegir el sistema correcto', 'Te ayudamos a definir la solución técnica ideal.'],
-              ['Elegir materiales confiables', 'Marcas seleccionadas con respaldo internacional.'],
-              ['Elegir respaldo técnico', 'Soporte para instalación y postventa.'],
-            ].map(([t, d]) => (
-              <li class="flex items-start gap-4">
-                <span class="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-brand-500/15 text-brand-400 ring-1 ring-brand-500/30">
-                  <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                </span>
-                <div>
-                  <div class="font-bold text-white">{t}</div>
-                  <div class="text-sm text-white/60">{d}</div>
-                </div>
-              </li>
-            ))}
-          </ul>
-
-          <a href="/nosotros" class="mt-8 inline-flex items-center gap-2 font-bold text-brand-400 hover:text-brand-300 transition-colors">
-            Conocé más sobre nosotros
-            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </a>
         </div>
       </div>
     </div>
