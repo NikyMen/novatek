@@ -2,13 +2,6 @@
 export const prerender = true;
 import SiteLayout from '../layouts/SiteLayout.astro';
 
-const teasers = [
-  { img: '/novedades-teaser/algo-grande.jpeg', t: 'Algo grande está por llegar', d: 'Una alianza que va a marcar un antes y un después.' },
-  { img: '/novedades-teaser/espera-vale.jpeg', t: 'La espera vale la pena', d: 'Hay marcas que nacen líderes. Y líderes que eligen crecer aún más.' },
-  { img: '/novedades-teaser/calidad-evoluciona.jpeg', t: 'La calidad evoluciona', d: 'Se viene algo que marca la diferencia.' },
-  { img: '/novedades-teaser/incorporacion.jpeg', t: 'Más que una incorporación', d: 'Sumamos experiencia, innovación y confianza.' },
-];
-
 const pilares = [
   { t: 'Más tecnología', d: 'Innovación y diseño para soluciones cada vez mejores.', icon: 'M12 2a7 7 0 00-4 12.74V17a2 2 0 002 2h4a2 2 0 002-2v-2.26A7 7 0 0012 2zM9 21h6' },
   { t: 'Más respaldo', d: 'El soporte de un grupo líder a nivel mundial.', icon: 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z' },
@@ -42,27 +35,6 @@ const pilares = [
             <h3 class="mt-5 font-display text-xl tracking-wide text-white">{p.t.toUpperCase()}</h3>
             <p class="mt-2 text-sm text-white/60">{p.d}</p>
           </div>
-        ))}
-      </div>
-    </div>
-  </section>
-
-  <!-- TEASERS GALLERY -->
-  <section id="teasers" class="py-20 md:py-28 scroll-mt-24">
-    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-2xl text-center" data-reveal>
-        <h2 class="font-display text-4xl md:text-5xl text-white">LAS PISTAS</h2>
-        <p class="mt-4 text-white/65">Seguí la campaña pieza por pieza. Cada placa revela un poco más.</p>
-      </div>
-      <div class="mt-14 grid sm:grid-cols-2 gap-6">
-        {teasers.map((t, i) => (
-          <figure class="group relative overflow-hidden rounded-3xl border border-white/10 shadow-card" data-reveal style={`--reveal-delay:${(i % 2) * 100}ms`}>
-            <img src={t.img} alt={t.t} class="w-full transition-transform duration-500 group-hover:scale-[1.03]" loading="lazy" />
-            <figcaption class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-navy-950 via-navy-950/60 to-transparent p-6 pt-16">
-              <div class="font-display text-2xl tracking-wide text-white">{t.t}</div>
-              <div class="mt-1 text-sm text-white/70">{t.d}</div>
-            </figcaption>
-          </figure>
         ))}
       </div>
     </div>
