@@ -23,18 +23,14 @@ const marcas = [
 ];
 
 const carrusel = [
-  '/carrusel/carrusel-1.jpeg',
-  '/carrusel/carrusel-2.jpeg',
-  '/carrusel/carrusel-3.jpeg',
-  '/carrusel/carrusel-4.jpeg',
-  '/carrusel/carrusel-5.jpeg',
-  '/carrusel/carrusel-6.jpeg',
-  '/carrusel/carrusel-7.jpeg',
-  '/carrusel/carrusel-8.jpeg',
-  '/carrusel/carrusel-9.jpeg',
-  '/carrusel/carrusel-10.jpeg',
-  '/carrusel/carrusel-11.jpeg',
-  '/carrusel/carrusel-12.jpeg',
+  { src: '/carrusel/carrusel-4.jpeg', alt: 'Nueva alianza preparada por Novatek' },
+  { src: '/carrusel/carrusel-7.jpeg', alt: 'Manijas Aris de Novatek' },
+  { src: '/carrusel/carrusel-9.jpeg', alt: 'Línea Aris de manijas Novatek' },
+  { src: '/carrusel/carrusel-10.jpeg', alt: 'Manijas Aris de mango largo Novatek' },
+  { src: '/carrusel/fapim-nux-teti-twenty.jpeg', alt: 'Manijas Fapim Nux, Teti y Twenty' },
+  { src: '/carrusel/alianza-novatek-udinese.jpeg', alt: 'Alianza entre Novatek, Udinese y ASSA ABLOY' },
+  { src: '/carrusel/udinese-precision.jpeg', alt: 'Prestaciones de los herrajes Udinese' },
+  { src: '/carrusel/que-es-udinese.jpeg', alt: 'Presentación de Udinese y su respaldo ASSA ABLOY' },
 ];
 
 const showMundialStockSection = false;
@@ -170,9 +166,9 @@ const showMundialStockSection = false;
       <div id="carrusel" class="relative overflow-hidden rounded-[2.5rem] border border-brand-500/20 bg-navy-800 shadow-card" data-reveal>
         <!-- Slides -->
         <div id="carrusel-track" class="flex transition-transform duration-700 ease-out">
-          {carrusel.map((img, i) => (
+          {carrusel.map((slide, i) => (
             <div class="relative w-full shrink-0">
-              <img src={img} alt={`Novatek — imagen ${i + 1}`} class="aspect-[16/9] w-full bg-navy-900 object-contain" loading={i === 0 ? 'eager' : 'lazy'} />
+              <img src={slide.src} alt={slide.alt} class="aspect-[16/9] w-full bg-navy-900 object-contain" loading={i === 0 ? 'eager' : 'lazy'} />
             </div>
           ))}
         </div>
