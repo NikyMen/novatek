@@ -100,18 +100,25 @@ const icons = {
     </div>
   </section>
 
-  <!-- Red de distribuidores -->
-  <section class="relative overflow-hidden py-20 md:py-24 bg-navy-900">
+  <!-- Red de distribuidores: transición Argentina → AMBA -->
+  <section id="red-distribuidores" class="distributor-scroll relative bg-navy-900" aria-label="Red de distribuidores Novatek">
     <div class="absolute inset-0 field-lines opacity-40"></div>
     <div class="pointer-events-none absolute left-1/2 top-0 h-96 w-96 -translate-x-1/2 rounded-full bg-brand-500/10 blur-3xl"></div>
-    <div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-      <img
-        src="/img/red-de-distribuidores.jpeg"
-        alt="Red de distribuidores Novatek: cobertura en todo el país. Encontrá tu distribuidor más cercano."
-        class="mx-auto block w-full max-w-[1200px] rounded-[2rem] border border-white/10 shadow-card"
-        loading="lazy"
-        data-reveal
-      />
+    <div class="distributor-stage relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div class="map-layer map-layer-country">
+        <img
+          src="/img/red-de-distribuidores.jpeg"
+          alt="Red de distribuidores Novatek: cobertura en todo el país."
+          loading="lazy"
+        />
+      </div>
+      <div class="map-layer map-layer-amba" aria-hidden="true">
+        <img
+          src="/AmbaDist.png"
+          alt=""
+          loading="lazy"
+        />
+      </div>
     </div>
   </section>
 
@@ -159,6 +166,109 @@ const icons = {
       </div>
     </div>
   </section>
+
+  <script is:inline>
+    (() => {
+      const section = document.getElementById('red-distribuidores');
+      if (!section || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      const stage = section.querySelector('.distributor-stage');
+      if (!stage) return;
+
+      let frame;
+      const clamp = (value, min = 0, max = 1) => Math.min(max, Math.max(min, value));
+
+      const update = () => {
+        frame = undefined;
+        const rect = section.getBoundingClientRect();
+        // Se calcula con la altura real de las dos cremonas para que la escena
+        // permanezca centrada aun después de que las imágenes terminen de cargar.
+        const stageTop = Math.max(88, (window.innerHeight - stage.offsetHeight) / 2);
+        section.style.setProperty('--stage-top', `${stageTop}px`);
+        const travel = Math.max(1, section.offsetHeight - stage.offsetHeight - stageTop);
+        const progress = clamp(-rect.top / travel);
+        // El primer tramo es intencionalmente estable: permite leer el mapa
+        // nacional antes de iniciar el paso hacia AMBA.
+        const countryTransition = clamp((progress - 0.42) / 0.16);
+        const ambaOpacity = clamp((progress - 0.62) / 0.16);
+        const countryOpacity = 1 - countryTransition;
+
+        section.style.setProperty('--country-scale', String(1 - countryTransition * 0.18));
+        section.style.setProperty('--country-y', '0%');
+        section.style.setProperty('--country-opacity', String(countryOpacity));
+        section.style.setProperty('--amba-scale', String(0.9 + ambaOpacity * 0.1));
+        section.style.setProperty('--amba-y', '0%');
+        section.style.setProperty('--amba-opacity', String(ambaOpacity));
+      };
+
+      const requestUpdate = () => {
+        if (!frame) frame = requestAnimationFrame(update);
+      };
+
+      update();
+      window.addEventListener('scroll', requestUpdate, { passive: true });
+      window.addEventListener('resize', requestUpdate);
+      new ResizeObserver(requestUpdate).observe(stage);
+    })();
+  </script>
+
+  <style>
+    .distributor-scroll {
+      --stage-top: clamp(5.5rem, calc(50vh - 18.75rem), 14rem);
+      --country-scale: 1;
+      --country-y: 0%;
+      --country-opacity: 1;
+      --amba-scale: 0.9;
+      --amba-y: 5%;
+      --amba-opacity: 0;
+      min-height: calc(100vh + 44rem);
+      padding-top: var(--stage-top);
+      isolation: isolate;
+    }
+
+    .distributor-stage {
+      position: sticky;
+      top: var(--stage-top);
+      display: grid;
+      height: auto;
+      min-height: 0;
+      place-items: center;
+    }
+
+    .map-layer {
+      grid-area: 1 / 1;
+      width: 100%;
+      max-width: 1200px;
+      transform-origin: center;
+      will-change: opacity, transform;
+    }
+
+    .map-layer img {
+      display: block;
+      width: 100%;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 2rem;
+      box-shadow: var(--tw-shadow, 0 20px 50px rgba(0, 0, 0, 0.25));
+    }
+
+    .map-layer-country {
+      opacity: var(--country-opacity);
+      transform: translate3d(0, var(--country-y), 0) scale(var(--country-scale));
+      z-index: 2;
+    }
+
+    .map-layer-amba {
+      opacity: var(--amba-opacity);
+      transform: translate3d(0, var(--amba-y), 0) scale(var(--amba-scale));
+      z-index: 3;
+    }
+
+    @media (prefers-reduced-motion: reduce), (max-width: 767px) {
+      .distributor-scroll { min-height: 0; padding-block: 5rem; }
+      .distributor-stage { position: static; display: block; height: auto; min-height: 0; }
+      .map-layer { max-width: 1200px; transform: none; opacity: 1; }
+      .map-layer + .map-layer { margin-top: 1.5rem; }
+    }
+  </style>
 
   <script is:inline>
     (function () {

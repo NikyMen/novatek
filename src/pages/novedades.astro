@@ -2,6 +2,10 @@
 export const prerender = true;
 import SiteLayout from '../layouts/SiteLayout.astro';
 
+const WA_PHONE = '541179402001';
+const preventaMessage = 'Hola Novatek, quiero más información acerca de la preventa exclusiva de productos Udinese + ASSA ABLOY.';
+const preventaWhatsappUrl = `https://wa.me/${WA_PHONE}?text=${encodeURIComponent(preventaMessage)}`;
+
 const pilares = [
   { t: 'Más tecnología', d: 'Innovación y diseño para soluciones cada vez mejores.', icon: 'M12 2a7 7 0 00-4 12.74V17a2 2 0 002 2h4a2 2 0 002-2v-2.26A7 7 0 0012 2zM9 21h6' },
   { t: 'Más respaldo', d: 'El soporte de un grupo líder a nivel mundial.', icon: 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z' },
@@ -11,8 +15,60 @@ const pilares = [
 
 <SiteLayout title="Novedades · Algo grande está por llegar — Novatek" description="Se viene una incorporación que va a impulsar tus proyectos. Más tecnología, más respaldo y más oportunidades. Muy pronto te contamos más.">
   <!-- NOVEDAD DESTACADA -->
-  <section class="w-full overflow-hidden">
-    <img src="/novedades123.jpeg" alt="Nueva alianza de Novatek" class="block h-auto w-full" />
+  <section class="w-full overflow-hidden pt-16 md:pt-20">
+    <img src="/Novedad_ASSA.jpeg" alt="Nueva alianza de Novatek con ASSA ABLOY" class="block h-auto w-full" data-reveal />
+  </section>
+
+  <!-- PREVENTA EXCLUSIVA -->
+  <section class="py-20 md:py-24">
+    <div class="mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-8">
+      <div class="grid items-center gap-12 lg:grid-cols-[3fr_2fr] lg:items-stretch">
+        <div class="relative" data-reveal>
+          <img
+            src="/Fescua2026.jpeg"
+            alt="Preventa exclusiva Udinese y ASSA ABLOY para clientes Novatek"
+            class="h-auto w-full rounded-[2rem] border border-white/10 shadow-card"
+            loading="lazy"
+          />
+        </div>
+        <div class="flex h-full flex-col" data-reveal style="--reveal-delay:120ms">
+          <div class="flex items-center gap-3">
+            <span class="slashes"><span></span><span></span><span></span></span>
+            <span class="text-xs font-bold uppercase tracking-widest2 text-brand-400">Exclusivo para clientes</span>
+          </div>
+          <h2 class="mt-5 font-display text-4xl leading-[1.05] text-white md:text-5xl">ALGO NUEVO ESTÁ POR LLEGAR A <span class="text-brand-500">NOVATEK</span>.</h2>
+          <p class="mt-6 text-lg leading-relaxed text-white/70">
+            Muy pronto vas a poder acceder a una preventa exclusiva de productos Udinese + ASSA ABLOY, con condiciones especiales pensadas únicamente para clientes activos de Novatek.
+          </p>
+          <p class="mt-5 text-lg leading-relaxed text-white/70">
+            Los detalles se comunicarán de manera exclusiva a nuestros clientes.
+          </p>
+          <a
+            href={preventaWhatsappUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="mt-8 inline-flex items-center gap-2 self-start rounded-full bg-orange-gradient px-8 py-4 font-bold text-white shadow-glow transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:ring-offset-2 focus:ring-offset-navy-900 lg:mt-auto"
+          >
+            Inscribirse
+            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RECORRIDO POR PLANTA -->
+  <section class="border-y border-white/10 bg-navy-800 py-20 md:py-24">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div class="relative overflow-hidden rounded-[2rem] border border-white/10 bg-navy-900 shadow-card" data-reveal>
+        <img
+          src="/RecorridoExclusivo.jpeg"
+          alt="Recorrido exclusivo por la planta de Udinese y ASSA ABLOY"
+          class="block h-auto w-full"
+          loading="lazy"
+        />
+      </div>
+    </div>
   </section>
 
   <!-- PILARES -->
@@ -41,7 +97,7 @@ const pilares = [
   </section>
 
   <!-- FORMULARIO DE NOVEDADES -->
-  <section class="pb-24">
+  <section class="pt-20 pb-24 md:pt-24">
     <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
       <div class="relative overflow-hidden rounded-[2.5rem] bg-orange-gradient px-8 py-12 md:px-12 md:py-16 shadow-glow" data-reveal>
         <div class="field-lines absolute inset-0 opacity-30"></div>

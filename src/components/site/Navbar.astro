@@ -8,11 +8,15 @@ const links = [
   { href: '/contacto', label: 'Contacto' },
 ];
 const path = Astro.url.pathname.replace(/\/$/, '') || '/';
+const isNovedades = path === '/novedades';
 ---
 
 <header
   id="site-nav"
-  class="fixed top-0 inset-x-0 z-50 transition-all duration-300 border-b border-white/0"
+  data-solid={isNovedades ? 'true' : 'false'}
+  class={`fixed top-0 inset-x-0 z-50 border-b transition-all duration-300 ${
+    isNovedades ? 'border-white/10 bg-navy-900/92 shadow-card backdrop-blur-xl' : 'border-white/0'
+  }`}
 >
   <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
     <div class="flex h-16 md:h-20 items-center justify-between">
@@ -65,11 +69,14 @@ const path = Astro.url.pathname.replace(/\/$/, '') || '/';
   >
     <nav class="mx-auto max-w-7xl px-4 py-4 flex flex-col gap-1">
       {
-        links.map((l) => (
-          <a href={l.href} class="rounded-xl px-4 py-3 text-base font-semibold text-white/90 hover:bg-white/10 hover:text-brand-400 transition-colors">
+        links.map((l) => {
+          const active = path === l.href.replace(/\/$/, '') || (l.href === '/' && path === '/');
+          return (
+          <a href={l.href} aria-current={active ? 'page' : undefined} class={`rounded-xl px-4 py-3 text-base font-semibold transition-colors ${active ? 'bg-brand-500/15 text-brand-400' : 'text-white/90 hover:bg-white/10 hover:text-brand-400'}`}>
             {l.label}
           </a>
-        ))
+          );
+        })
       }
       <a
         href={WA}
@@ -90,9 +97,10 @@ const path = Astro.url.pathname.replace(/\/$/, '') || '/';
     const menu = document.getElementById('mobile-menu');
     const open = document.getElementById('ic-open');
     const close = document.getElementById('ic-close');
+    const alwaysSolid = nav?.dataset.solid === 'true';
 
     function onScroll() {
-      if (window.scrollY > 24) {
+      if (alwaysSolid || window.scrollY > 24) {
         nav.classList.add('bg-navy-900/85', 'backdrop-blur-xl', 'border-white/10', 'shadow-card');
       } else {
         nav.classList.remove('bg-navy-900/85', 'backdrop-blur-xl', 'border-white/10', 'shadow-card');
