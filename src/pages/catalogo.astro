@@ -15,11 +15,12 @@ const categorias = [
 ];
 
 const marcas = [
-  { n: 'Roto', img: '/img/marca-1.png' },
+  { n: 'Udinese Assa Abloy', img: '/Novatek - Udinese Assa Abloy.png' },
   { n: 'Fapim', img: '/img/marca-2.png' },
+  { n: 'Giesse', img: '/img/marca-5.png' },
+  { n: 'Roto', img: '/img/marca-1.png' },
   { n: 'Monticelli', img: '/img/marca-3.png' },
   { n: 'Comunello', img: '/img/marca-4.png' },
-  { n: 'Giesse', img: '/img/marca-5.png' },
 ];
 ---
 
@@ -74,7 +75,7 @@ const marcas = [
       <div class="text-center" data-reveal>
         <h2 class="font-display text-3xl md:text-4xl text-white">MARCAS QUE NOS ACOMPAÑAN</h2>
       </div>
-      <div class="mt-10 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-5" data-reveal>
+      <div class="mt-10 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-5" data-reveal>
         {marcas.map((m) => (
           <div class="grid place-items-center rounded-2xl border border-white/10 bg-white px-3 py-4 transition-transform hover:-translate-y-1">
             <img src={m.img} alt={m.n} class="h-20 md:h-24 w-full object-contain" loading="lazy" />
